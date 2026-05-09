@@ -27,7 +27,7 @@ void input_Bfield_data()
 
     //****************** 磁場データ読み込み ******************
     //インプットファイル指定
-    std::ifstream ifs("data/Bfield_data.csv");
+    std::ifstream ifs("input/Bfield_data.csv");
 
     if (!ifs) {
         std::cout << "[Bfield_data.csv] Error! File not found." << std::endl;
@@ -373,7 +373,7 @@ void input_BOLSIG_data()
 
     //****************** データ読み込み ******************
     //電子衝突レートインプットファイル指定
-    std::ifstream ifs("data/rateCoef_e.csv");
+    std::ifstream ifs("input/rateCoef_e.csv");
 
     if (!ifs) {
         std::cout << "[rateCoef_e.csv] Error! File not found." << std::endl;
@@ -491,7 +491,7 @@ void input_BOLSIG_data()
     ifs.close();
 
     //イオン衝突レートインプットファイル指定
-    std::ifstream ifs1("data/rateCoef_i.csv");
+    std::ifstream ifs1("input/rateCoef_i.csv");
 
     if (!ifs1) {
         std::cout << "[rateCoef_i.csv] Error! File not found." << std::endl;
@@ -621,7 +621,7 @@ void input_SEE_data()
 
     //****************** データ読み込み ******************
     //電子衝突レートインプットファイル指定
-    std::ifstream ifs("data/coefEISEE.csv");
+    std::ifstream ifs("input/coefEISEE.csv");
 
     if (!ifs) {
         std::cout << "[coefEISEE.csv] Error! File not found." << std::endl;

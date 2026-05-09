@@ -27,7 +27,7 @@ void inputParam()
 {
 
     //インプットファイル指定
-    std::ifstream ifs("data/setup.csv");
+    std::ifstream ifs("input/setup.csv");
 
     if (!ifs) {
         std::cout << "[setup.csv] Error! File not found." << std::endl;

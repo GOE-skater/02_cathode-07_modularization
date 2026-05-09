@@ -18,6 +18,7 @@
 #include <complex>
 #include <yaml-cpp/yaml.h>
 #include <stdexcept>
+
 //*****************************************************************
 //**                                                             **
 //**           void inputParam                                   **
@@ -37,7 +38,7 @@ void inputParam()
         abort();
     }
 
-    int count = 0;
+    std::vector<std::string> missingParams;
 
     auto readDouble = [&](double& dst,
                           const std::string& category,
@@ -45,14 +46,23 @@ void inputParam()
         const YAML::Node categoryNode = setup[category];
 
         if (!categoryNode) {
-            throw std::runtime_error("Missing YAML category: " + category);
-        }
-        if (!categoryNode[key]) {
-            throw std::runtime_error("Missing YAML parameter: " + category + "." + key);
+            missingParams.push_back(category + "." + key + "  [missing category: " + category + "]");
+            return;
         }
 
-        dst = categoryNode[key].as<double>();
-        count += 1;
+        if (!categoryNode[key]) {
+            missingParams.push_back(category + "." + key);
+            return;
+        }
+
+        try {
+            dst = categoryNode[key].as<double>();
+        }
+        catch (const std::exception& e) {
+            throw std::runtime_error(
+                "Type conversion error: " + category + "." + key + " should be double"
+            );
+        }
     };
 
     auto readInt = [&](int& dst,
@@ -61,14 +71,23 @@ void inputParam()
         const YAML::Node categoryNode = setup[category];
 
         if (!categoryNode) {
-            throw std::runtime_error("Missing YAML category: " + category);
-        }
-        if (!categoryNode[key]) {
-            throw std::runtime_error("Missing YAML parameter: " + category + "." + key);
+            missingParams.push_back(category + "." + key + "  [missing category: " + category + "]");
+            return;
         }
 
-        dst = categoryNode[key].as<int>();
-        count += 1;
+        if (!categoryNode[key]) {
+            missingParams.push_back(category + "." + key);
+            return;
+        }
+
+        try {
+            dst = categoryNode[key].as<int>();
+        }
+        catch (const std::exception& e) {
+            throw std::runtime_error(
+                "Type conversion error: " + category + "." + key + " should be int"
+            );
+        }
     };
 
 #define READ_DOUBLE(category, var) readDouble((var), (category), #var)
@@ -126,19 +145,23 @@ void inputParam()
         READ_DOUBLE(category, error_cnv_SOR_Ui);
         READ_INT(category, maxITR_SOR_Ui);
         READ_INT(category, icon_iter_Ui);
+
         READ_DOUBLE(category, error_cnv_SOR_rhoi);
         READ_INT(category, maxITR_SOR_rhoi);
         READ_INT(category, icon_iter_rhoi);
+
         READ_DOUBLE(category, error_cnv_SOR_phi);
         READ_INT(category, maxITR_SOR_phi);
         READ_INT(category, icon_iter_phi);
         READ_DOUBLE(category, error_cnv_HES_phi);
         READ_INT(category, maxITR_HES_phi);
+
         READ_DOUBLE(category, error_cnv_SOR_rhoe);
         READ_INT(category, maxITR_SOR_rhoe);
         READ_INT(category, icon_iter_rhoe);
         READ_DOUBLE(category, error_cnv_HES_rhoe);
         READ_INT(category, maxITR_HES_rhoe);
+
         READ_DOUBLE(category, error_cnv_SOR_rhoeps);
         READ_INT(category, maxITR_SOR_rhoeps);
         READ_INT(category, icon_iter_rhoeps);
@@ -172,18 +195,22 @@ void inputParam()
 #undef READ_DOUBLE
 #undef READ_INT
 
-    std::cout << std::endl;
-    std::cout << "[" << count << "/58 parameters are input to simulation]" << std::endl;
-
-    if (count != 58) {
+    if (!missingParams.empty()) {
         std::cout << std::endl;
-        std::cout << "[setup.yaml] Error! Number of input parameters is incorrect." << std::endl;
+        std::cout << "[setup.yaml] Error! Missing YAML parameters:" << std::endl;
+
+        for (const auto& name : missingParams) {
+            std::cout << "  - " << name << std::endl;
+        }
+
+        std::cout << std::endl;
         abort();
     }
 
     std::cout << std::endl;
+    std::cout << "[All setup parameters are successfully loaded]" << std::endl;
+    std::cout << std::endl;
 }
-
 
 //*****************************************************************
 //**                                                             **

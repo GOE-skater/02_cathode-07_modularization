@@ -57,11 +57,6 @@ scheme:
 
 # ============================================================
 # Solver settings
-#
-# Note:
-# This section is only a category for readability.
-# Each parameter key exactly matches the corresponding C++ variable name.
-# Maximum YAML depth is 2 levels: category -> parameter.
 # ============================================================
 
 solver:

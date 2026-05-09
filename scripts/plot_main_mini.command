@@ -1,0 +1,14 @@
+cd `dirname $0`
+python plot_rhoi_mini.py 136
+python plot_rhoe_mini.py 136
+python plot_rhom_mini.py 136
+python plot_phi_mini.py 136
+python plot_Te_mini.py 136
+python plot_rate_ionize_mini.py 136
+python plot_Uix_mini.py 136
+python plot_Uir_mini.py 136
+python plot_Uip_mini.py 136
+python plot_log_Pabs_mini.py 136
+python plot_log_absEx_mini.py 136
+python plot_log_absEr_mini.py 136
+python plot_log_absEp_mini.py 136

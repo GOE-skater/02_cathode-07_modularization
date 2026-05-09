@@ -1,0 +1,23 @@
+# Compiled files
+*.o
+*.out
+*.exe
+*.so
+*.dll
+*.dylib
+
+# Generated results
+results/*
+touch results/.gitkeep
+
+# Restart files
+restart/*
+touch restart/.gitkeep
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Editor / OS
+.vscode/
+.DS_Store

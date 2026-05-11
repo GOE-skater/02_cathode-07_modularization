@@ -3476,7 +3476,7 @@ void update_Ui_constTe(){
 
     //update Uir
     //=================================================================================
-    for (int iblock=0;iblock<n_bl-2;iblock++){
+    for (int iblock=0;iblock<n_bl-1;iblock++){
         for (int i=i_flr_bl[iblock][0];i<=i_flr_bl[iblock][1];i++){
             for (int j=j_flr_bl[iblock][0];j<=j_flr_bl[iblock][1] + int(iblock == 4);j++){
                 //diffusion coefficient (numerical param.)
@@ -34489,7 +34489,7 @@ void solve_Te_wdTe_wSEE_PC(){
                              +    vd_Lx/(exp(fmin( z_Lx,lim_exp)) - 1.0)*bLx*dr
                              + qR*vd_Rr/(1.0 - exp(fmin(-z_Rr,lim_exp)))*bRr*dx
                              + qL*vd_Lr/(exp(fmin( z_Lr,lim_exp)) - 1.0)*bLr*dx
-                             + 3.0/5.0*delossdeps[i][j]*dx*dr //part of implicit source term prediction
+                             //+ 3.0/5.0*delossdeps[i][j]*dx*dr //part of implicit source term prediction
                              + 3.0/5.0*dx*dr/dt; //time-term
                     aE[i][j] =    vd_Rx/(exp(fmin( z_Rx,lim_exp)) - 1.0)*bRx*dr;
                     aW[i][j] =    vd_Lx/(1.0 - exp(fmin(-z_Lx,lim_exp)))*bLx*dr;
@@ -34511,9 +34511,9 @@ void solve_Te_wdTe_wSEE_PC(){
                     //double RHS2 = -e0*(Ex_tmp*rhoUex_tmp + Er_tmp*rhoUer_tmp);
                     double RHS2 = JdotE_x + JdotE_r;
                     double RHS3 = Pabs[i][j] 
-                        - rhoe[i][j]*rate_eloss[i][j] 
-                        - delossdeps[i][j]*rhoeps[i][j]
-                        + rhoe[i][j]*(1.5*Boltz*Te[i][j])*delossdeps[i][j]; //part of implicit source term prediction
+                        - rhoe[i][j]*rate_eloss[i][j];
+                        //- delossdeps[i][j]*rhoeps[i][j]
+                        //+ rhoe[i][j]*(1.5*Boltz*Te[i][j])*delossdeps[i][j]; //part of implicit source term prediction
                         
                     double RHS4 = -nabla_G;
 
@@ -34722,6 +34722,106 @@ void solve_Te_wdTe_wSEE_PC(){
     
     } while (icon_end == 0);
 
+
+    
+    //calculation of energy balance
+    //------------------------------------
+    if(itime%2000 == 0 || itime == ntime){
+        
+        //volume integrated values
+        //------------------------------------
+        double dEdt_sum          = 0.0;
+        double nabla_G_sum       = 0.0;
+        double rate_eloss_sum    = 0.0;
+        double Joule_sum         = 0.0;
+        double input_sum         = 0.0;
+        //------------------------------------
+
+        //calculate volume integrated of each term
+        //------------------------------------
+        for (int iblock=0;iblock<n_bl-1;iblock++){ 
+            for (int i=i_flc_bl[iblock][0];i<=i_flc_bl[iblock][1];i++){ 
+                for (int j=j_flc_bl[iblock][0];j<=j_flc_bl[iblock][1];j++){
+                    
+                    //radial position at upper and lower cell interface
+                    //------------------------------------
+                    double rR = (r[j]+r[j+1])/2.0;
+                    double rL = (r[j]+r[j-1])/2.0;
+                    //------------------------------------
+
+                    //normalized radial position at upper and lower cell interface
+                    //------------------------------------
+                    double qR = (r[j]+r[j+1])/2.0/r[j];
+                    double qL = (r[j]+r[j-1])/2.0/r[j];
+                    //------------------------------------
+
+                    //BC - set adjacent flag (adjacent = 0, others = 1)
+                    //adjacent "cell" to the wall for setting zero-flux on the wall
+                    //------------------------------------
+                    //left
+                    double bLx_wall  = double(i!=i_flc_bl[0][0] || iblock != 0); //z0
+                    bLx_wall = bLx_wall*double(i!=i_flc_bl[2][0] || j>j_flc_bl[0][0]-1); //z1
+                    bLx_wall = bLx_wall*double(i!=i_flc_bl[3][0] || j>j_flc_bl[2][0]-1); //z2
+                    bLx_wall = bLx_wall*double(i!=i_flc_bl[4][0] || j<j_flc_bl[1][0]); //z4
+                    double bLx  = bLx_wall;
+                    
+                    //right
+                    double bRx_wall  = double(i!=i_flc_bl[1][1] || j<j_flc_bl[1][0]); //z3
+                    bRx_wall = bRx_wall*double(i!=i_flc_bl[4][1]); //z5
+                    double bRx  = bRx_wall;
+                    
+                    //lower
+                    double bLr_wall  = double(j!=j_flc_bl[0][0] || i>i_flc_bl[0][1]); //x0
+                    bLr_wall = bLr_wall*double(j!=j_flc_bl[2][0] || i>i_flc_bl[2][1]); //x2
+                    double bLr_cen = double(j!=j_flc_bl[3][0]); //x6
+                    double bLr  = bLr_wall*bLr_cen;
+                    
+                    //upper
+                    double bRr_wall  = double(j!=j_flc_bl[0][1] || iblock > 2); //x1
+                    bRr_wall = bRr_wall*double(j!=j_flc_bl[3][1] || i<i_flc_bl[1][1]+1 || i>i_flc_bl[3][1]); //x4
+                    double bRr_open  = (j!=j_flc_bl[4][1] || iblock != 4); //x5
+                    double bRr = bRr_wall*bRr_open;
+                    //------------------------------------
+
+                    //RHS
+                    //------------------------------------
+                    double nabla_G = (Gx[i+1][j]-Gx[i][j])/dx + (qR*Gr[i][j+1]-qL*Gr[i][j])/dr;
+                    //double rhoUex_tmp = (rhoUex[i+1][j]*bRx_wall + rhoUex[i][j]*bLx_wall)/2.0;
+                    //double rhoUer_tmp = (rR*rhoUer[i][j+1]*bRr_wall + rL*rhoUer[i][j]*bLr_wall)/(2.0*r[j]);
+                    //double Ex_tmp = (Ex[i+1][j] + Ex[i][j])/2.0;
+                    //double Er_tmp = (rR*Er[i][j+1] + rL*Er[i][j])/(2.0*r[j]);
+                    double JdotE_x = -e0*(rhoUex[i+1][j]*Ex[i+1][j]*bRx_wall + rhoUex[i][j]*Ex[i][j]*bLx_wall)/2.0;
+                    double JdotE_r = -e0*(rR*rhoUer[i][j+1]*Er[i][j+1]*bRr_wall + rL*rhoUer[i][j]*Er[i][j]*bLr_wall)/(2.0*r[j]);
+                    double RHS2 = JdotE_x + JdotE_r;
+
+                    //double P_ES = (-e0)*(Ex_tmp*rhoUex_tmp + Er_tmp*rhoUer_tmp);
+                    double volume = 2.0*M_PI*r[j]*dr*dx;
+                    
+                    dEdt_sum          = dEdt_sum          + volume*(rhoeps[i][j] - rhoeps_old[i][j])/dt;
+                    nabla_G_sum       = nabla_G_sum       + volume*nabla_G;
+                    rate_eloss_sum    = rate_eloss_sum    + volume*(-rhoe[i][j]*rate_eloss[i][j]);
+                    Joule_sum         = Joule_sum         + volume*RHS2;
+                    input_sum         = input_sum         + volume*Pabs[i][j];
+                }
+            }
+        }
+
+        //output energy balance for electron
+        //------------------------------------
+        std::string char1="results/energy_balance_electron";
+        std::string char2=std::to_string(nOut);
+        std::string char_csv=".csv";
+        std::ofstream outputfile11(char1+char2+char_csv);
+        outputfile11 << std::setprecision(std::numeric_limits<double>::max_digits10) << std::scientific;
+        outputfile11<< "dE/dt (J/s), loss_to_bnd (J/s), collision_loss (J/s), Joule (J/s), input (J/s), sum (J/s)"<< std::endl;
+        outputfile11<< dEdt_sum << "," << -nabla_G_sum << "," << rate_eloss_sum 
+            << "," << Joule_sum << "," << input_sum 
+            << ","<< -dEdt_sum + (-nabla_G_sum + rate_eloss_sum + Joule_sum + input_sum)<<std::endl;
+        outputfile11.close();
+        //------------------------------------
+    }
+
+    
     //std::cout << "ncount_Te = "<<ncount<<std::endl;
 
     //Don’t update unless the value is positive.
@@ -34892,6 +34992,10 @@ void solve_Te_wdTe_wSEE_PC(){
     }
     //------------------------------------
     //=====================================================================================
+
+
+
+    
 
 }
 
@@ -38803,7 +38907,7 @@ void update_rhon_old3(){
 //**           void solve_rhoe_simple                         **
 //**                                                             **
 //*****************************************************************
-void update_rhon(){
+void update_rhon_old4(){
 
 
     std::vector<std::vector<double> > aW(ni+2,std::vector<double>(nj+2,0.0)); //係数
@@ -39267,6 +39371,481 @@ void update_rhon(){
     }
 
 }
+
+//*****************************************************************
+//**                                                             **
+//**           void solve_rhoe_simple                         **
+//**                                                             **
+//*****************************************************************
+void update_rhon(){
+
+
+    std::vector<std::vector<double> > aW(ni+2,std::vector<double>(nj+2,0.0)); //係数
+    std::vector<std::vector<double> > aE(ni+2,std::vector<double>(nj+2,0.0)); //係数
+    std::vector<std::vector<double> > aS(ni+2,std::vector<double>(nj+2,0.0)); //係数
+    std::vector<std::vector<double> > aN(ni+2,std::vector<double>(nj+2,0.0)); //係数
+    std::vector<std::vector<double> > aP(ni+2,std::vector<double>(nj+2,0.0)); //係数
+    std::vector<std::vector<double> > b (ni+2,std::vector<double>(nj+2,0.0)); //ソース
+
+    //time step for metastable neutral
+    //------------------------------------
+    double dt_n = dt*double(ndt_n);
+    //------------------------------------
+    
+    double vth = sqrt(8.0*Boltz*Tn/(M_PI*massi));
+    double sigma = M_PI*(2.0*ri)*(2.0*ri); //Attention：有効半径なので\sigma = \pi*d^2
+    //double nu_tmp = sqrt(2.0)*rhon*sigma*vth;
+    //double Dn = Boltz*Tn/(massi*nu_tmp);
+    double DnN = 2.0/(3.0*sigma)*sqrt(Boltz*Tn/(M_PI*massi));
+
+    //double di_tmp = 2.0*ri;
+    //double DnN2 = 3.0/(8.0*di_tmp*di_tmp)*sqrt(Boltz*Tn/(M_PI*massi));
+    //std::cout << "DnN = " <<DnN << " DnN2 = " << DnN2 << std::endl;
+
+    //std::cout << "DnN = " << DnN <<std::endl;
+
+    //double Dn = DmN/rhon_ini;
+
+    //過去の値を保存 (ゴーストセルも含む)
+    for (int i=0;i<=ni+1;i++){ 
+        for (int j=0;j<=nj+1;j++){ 
+            rhon_old[i][j] = rhon[i][j];
+            rhoUnx_old[i][j] = rhoUnx[i][j];
+            rhoUnr_old[i][j] = rhoUnr[i][j];
+        }
+    }
+
+    //係数作成
+    for (int iblock=0;iblock<n_bl-1;iblock++){ 
+        for (int i=i_flc_bl[iblock][0];i<=i_flc_bl[iblock][1];i++){ 
+            for (int j=j_flc_bl[iblock][0];j<=j_flc_bl[iblock][1];j++){
+                double rL = (r[j]+r[j-1])/2.0;
+                double rR = (r[j]+r[j+1])/2.0;
+                double qL = (r[j]+r[j-1])/2.0/r[j];
+                double qR = (r[j]+r[j+1])/2.0/r[j];
+
+                double rhon_Lx = (rhon_old[i][j]+rhon_old[i-1][j])/2.0;
+                double rhon_Rx = (rhon_old[i][j]+rhon_old[i+1][j])/2.0;
+                double rhon_Lr = (rhon_old[i][j]+rhon_old[i][j-1])/2.0;
+                double rhon_Rr = (rhon_old[i][j]+rhon_old[i][j+1])/2.0;
+
+                double Dn_Lx = DnN/(rhon_Lx + 1e-100);
+                double Dn_Rx = DnN/(rhon_Rx + 1e-100);
+                double Dn_Lr = DnN/(rhon_Lr + 1e-100);
+                double Dn_Rr = DnN/(rhon_Rr + 1e-100);
+
+                //BC - set adjacent flag (adjacent = 0, others = 1)
+                //adjacent "cell" to the wall for setting zero-flux on the wall
+                //------------------------------------
+                //left
+                double bLx_wall  = double(i!=i_flc_bl[0][0] || iblock != 0); //z0
+                bLx_wall = bLx_wall*double(i!=i_flc_bl[2][0] || j>j_flc_bl[0][0]-1); //z1
+                bLx_wall = bLx_wall*double(i!=i_flc_bl[3][0] || j>j_flc_bl[2][0]-1); //z2
+                bLx_wall = bLx_wall*double(i!=i_flc_bl[4][0] || j<j_flc_bl[1][0]); //z4
+                double bLx  = bLx_wall;
+                
+                //right
+                double bRx_wall  = double(i!=i_flc_bl[1][1] || j<j_flc_bl[1][0]); //z3
+                bRx_wall = bRx_wall*double(i!=i_flc_bl[4][1]); //z5
+                double bRx  = bRx_wall;
+                
+                //lower
+                double bLr_wall  = double(j!=j_flc_bl[0][0] || i>i_flc_bl[0][1]); //x0
+                bLr_wall = bLr_wall*double(j!=j_flc_bl[2][0] || i>i_flc_bl[2][1]); //x2
+                double bLr_cen = double(j!=j_flc_bl[3][0]); //x6
+                double bLr  = bLr_wall*bLr_cen;
+                
+                //upper
+                double bRr_wall  = double(j!=j_flc_bl[0][1] || iblock > 2 || x[i] <= width_neutIn+x6); //x1 not inlet
+                double bRr_in  = double(j!=j_flc_bl[0][1] || iblock > 2 || x[i] > width_neutIn+x6); //x1 inlet
+                bRr_wall = bRr_wall*double(j!=j_flc_bl[3][1] || i<i_flc_bl[1][1]+1 || i>i_flc_bl[3][1]); //x4
+                double bRr_open  = (j!=j_flc_bl[4][1] || iblock != 4); //x5
+                double bRr = bRr_wall*bRr_in*bRr_open;
+                //------------------------------------
+
+                //wall-flux divide by density (for implicit method)
+                //------------------------------------
+                //double GammaPerN_open_Rr = 0.0;
+                //if(bRr_open == 0){
+                //    double vth = sqrt(8.0*Boltz*Te[i][j]/(M_PI*masse));
+                //    GammaPerN_open_Rr = 0.25*vth;
+                //}
+                //------------------------------------
+
+                //boundary-flux
+                //------------------------------------
+                double Gamma_wall_Lx = 0.0;
+                if(bLx_wall == 0){
+                    Gamma_wall_Lx = -rhoUix_wall[i][j] - rhoUmx_wall[i][j];
+                }
+                double Gamma_wall_Rx = 0.0;
+                if(bRx_wall == 0){
+                    Gamma_wall_Rx = -rhoUix_wall[i+1][j] - rhoUmx_wall[i+1][j];
+                }
+                double Gamma_wall_Lr = 0.0;
+                if(bLr_wall == 0){
+                    Gamma_wall_Lr = -rhoUir_wall[i][j]   - rhoUmr_wall[i][j];
+                }
+                double Gamma_wall_Rr = 0.0;
+                if(bRr_wall == 0){
+                    Gamma_wall_Rr = -rhoUir_wall[i][j+1] - rhoUmr_wall[i][j+1];
+                }
+                double Gamma_in_Rr = 0.0;
+                if(bRr_in== 0){
+                    Gamma_in_Rr = -rhoUir_wall[i][j+1] - rhoUmr_wall[i][j+1] - fn_In;
+                    //std::cout << Gamma_in_Rr << ","<<fn_In << std::endl;
+                }
+                double Gamma_open_Rr = 0.0;
+                if(bRr_open== 0){
+                    Gamma_open_Rr = fmax(rL/rR*rhoUnr_old[i][j],0.0);
+                }
+                //------------------------------------
+   
+                aP[i][j] = (Dn_Rx*bRx + Dn_Lx*bLx)*dr*dr 
+                    + (qR*Dn_Rr*bRr + qL*Dn_Lr*bLr)*dx*dx 
+                    //+    0.25*vth*dr*dx*dr/Dn*nbLx //陰的指定
+                    //+    0.25*vth*dr*dx*dr/Dn*nbRx //陰的指定
+                    //+ qL*0.25*vth*dx*dx*dr/Dn*nbLr //陰的指定
+                    //+ qR*GammaPerN_open_Rr*dx*dx*dr //陰的指定
+                    + dx*dx*dr*dr/dt_n; //時間項;
+                aE[i][j] = Dn_Rx*dr*dr*bRx;
+                aW[i][j] = Dn_Lx*dr*dr*bLx;
+                aN[i][j] = qR*Dn_Rr*dx*dx*bRr;
+                aS[i][j] = qL*Dn_Lr*dx*dx*bLr;
+
+                //double rhoUnx_Rx = rhoUnx_old[i][j];
+                //double rhoUnx_Rr = rhoUnr_old[i][j]*rL/rR;
+
+                //metaからのstepwise-excitationとsuper-elasticのde-excitationによる生成
+                double G = (nu_excStep[i][j] + nu_super[i][j])*rhoe[i][j]; 
+                
+                //metaに行ってしまう分と「direct」-ionizationによる分
+                double L = (nu_excMeta[i][j] + 0.5*nu_exc[i][j] + nu_ionz[i][j])*rhoe[i][j];
+
+                b[i][j] = rhon_old[i][j]/dt_n*dx*dx*dr*dr + (G - L)*dx*dx*dr*dr
+                    + (
+                        Gamma_wall_Lx //左壁境界1,2 //陽的指定
+                      )*dr*dx*dr
+                    - (
+                        Gamma_wall_Rx //右壁境界
+                      )*dr*dx*dr
+                    + qL*(
+                        Gamma_wall_Lr //下壁境界
+                      )*dx*dx*dr
+                    - qR*(
+                        Gamma_wall_Rr //上壁境界
+                        + Gamma_open_Rr //上壁境界
+                        + Gamma_in_Rr
+                      )*dx*dx*dr;
+            }
+        }
+    }
+
+    if(icon_iter_phi==0){
+        double alpha = 1.9;
+        solver_SOR(aP,aE,aW,aN,aS,b,i_flc_bl,j_flc_bl,alpha,maxITR_SOR_phi,error_cnv_SOR_phi,0,rhon);
+    }else{
+        solver_SMG(aP,aE,aW,aN,aS,b,i_flc_bl,j_flc_bl,maxITR_SOR_phi,error_cnv_SOR_phi,0,rhon);
+    }
+
+    //rhoUnx更新
+    for (int iblock=0;iblock<n_bl-1;iblock++){ 
+        for (int i=i_flx_bl[iblock][0];i<=i_flx_bl[iblock][1];i++){ 
+            for (int j=j_flx_bl[iblock][0];j<=j_flx_bl[iblock][1];j++){
+                double rhon_Lx = (rhon_old[i][j]+rhon_old[i-1][j])/2.0;
+                double Dn_Lx = DnN/(rhon_Lx + 1e-100);
+
+                rhoUnx[i][j] = -Dn_Lx*(rhon[i][j] - rhon[i-1][j])/dx;
+            }
+        }
+    }
+
+    //rhoUnr更新
+    for (int iblock=0;iblock<n_bl-1;iblock++){ 
+        for (int i=i_flr_bl[iblock][0];i<=i_flr_bl[iblock][1];i++){ 
+            for (int j=j_flr_bl[iblock][0];j<=j_flr_bl[iblock][1];j++){
+                double rhon_Lr = (rhon_old[i][j]+rhon_old[i][j-1])/2.0;
+                double Dn_Lr = DnN/(rhon_Lr + 1e-100);
+
+                rhoUnr[i][j] = -Dn_Lr*(rhon[i][j] - rhon[i][j-1])/dr;
+            }
+        }   
+    }
+
+
+    //左 壁 z0
+    for (int j=j_flc_bl[0][0];j<=j_flc_bl[0][1];j++){
+        int i=i_flc_bl[0][0];
+        //rhoUnx[i][j] = -0.25*rhon[i][j]*vth;
+        //rhoUnx[i][j] = -rhoi[i][j]*Uix[i][j]; //Recombination
+        double Gamma_wall_Lx = -rhoUix_wall[i][j]   - rhoUmx_wall[i][j];
+        rhoUnx[i][j] = Gamma_wall_Lx;
+        rhoUnx_wall[i][j] = rhoUnx[i][j];
+    }
+    //左 壁 z1
+    for (int j=j_flc_bl[2][0];j<=j_flc_bl[0][0]-1;j++){
+        int i=i_flc_bl[2][0];
+        //rhoUnx[i][j] = -0.25*rhon[i][j]*vth;
+        //rhoUnx[i][j] = -rhoi[i][j]*Uix[i][j]; //Recombination
+        double Gamma_wall_Lx = -rhoUix_wall[i][j]   - rhoUmx_wall[i][j];
+        rhoUnx[i][j] = Gamma_wall_Lx;
+        rhoUnx_wall[i][j] = rhoUnx[i][j];
+    }
+    //左 壁 z2
+    for (int j=j_flc_bl[3][0];j<=j_flc_bl[2][0]-1;j++){
+        int i=i_flc_bl[3][0];
+        //rhoUnx[i][j] = -0.25*rhon[i][j]*vth;
+        //rhoUnx[i][j] = -rhoi[i][j]*Uix[i][j]; //Recombination
+        double Gamma_wall_Lx = -rhoUix_wall[i][j]   - rhoUmx_wall[i][j];
+        rhoUnx[i][j] = Gamma_wall_Lx;
+        rhoUnx_wall[i][j] = rhoUnx[i][j];
+    }
+    //左 壁 z4
+    for (int j=j_flc_bl[1][0];j<=j_flc_bl[4][1];j++){
+        int i=i_flc_bl[4][0];
+        //rhoUnx[i][j] = -0.25*rhon[i][j]*vth;
+        //rhoUnx[i][j] = -rhoi[i][j]*Uix[i][j]; //Recombination
+        double Gamma_wall_Lx = -rhoUix_wall[i][j]   - rhoUmx_wall[i][j];
+        rhoUnx[i][j] = Gamma_wall_Lx;
+        rhoUnx_wall[i][j] = rhoUnx[i][j];
+    }
+    //右 壁 z3
+    for (int j=j_flc_bl[1][0];j<=j_flc_bl[1][1];j++){
+        int i=i_flc_bl[1][1];
+        //rhoUnx[i+1][j] = 0.25*rhon[i][j]*vth;
+        double Gamma_wall_Rx = -rhoUix_wall[i+1][j] - rhoUmx_wall[i+1][j];
+        rhoUnx[i+1][j] = Gamma_wall_Rx;
+        rhoUnx_wall[i+1][j] = rhoUnx[i+1][j];
+    }
+    //右 壁 z5
+    for (int j=j_flc_bl[4][0];j<=j_flc_bl[4][1];j++){
+        int i=i_flc_bl[4][1];
+        //rhoUnx[i+1][j] = 0.25*rhon[i][j]*vth;
+        double Gamma_wall_Rx = -rhoUix_wall[i+1][j] - rhoUmx_wall[i+1][j];
+        rhoUnx[i+1][j] = Gamma_wall_Rx;
+        rhoUnx_wall[i+1][j] = rhoUnx[i+1][j];
+    }
+    //下 壁 x0
+    for (int i=i_flc_bl[0][0];i<=i_flc_bl[0][1];i++){
+        int j=j_flc_bl[0][0];
+        //rhoUnr[i][j] = -0.25*rhon[i][j]*vth;
+        //rhoUnr[i][j] = -rhoi[i][j]*Uir[i][j]; //Recombination
+        double Gamma_wall_Lr = -rhoUir_wall[i][j]   - rhoUmr_wall[i][j];
+        rhoUnr[i][j] = Gamma_wall_Lr;
+        rhoUnr_wall[i][j] = rhoUnr[i][j];
+    }
+    //下 壁 x2
+    for (int i=i_flc_bl[2][0];i<=i_flc_bl[2][1];i++){
+        int j=j_flc_bl[2][0];
+        //rhoUnr[i][j] = -0.25*rhon[i][j]*vth;
+        //rhoUnr[i][j] = -rhoi[i][j]*Uir[i][j]; //Recombination
+        double Gamma_wall_Lr = -rhoUir_wall[i][j]   - rhoUmr_wall[i][j];
+        rhoUnr[i][j] = Gamma_wall_Lr;
+        rhoUnr_wall[i][j] = rhoUnr[i][j];
+    }
+    //上 壁 x1
+    for (int i=i_flc_bl[0][0];i<=i_flc_bl[1][1];i++){
+        int j=j_flc_bl[0][1];
+        if(x[i] < width_neutIn + x6){ //流入部
+            //rhoUnr[i][j+1] = -fn_In;
+            double Gamma_in_Rr = -rhoUir_wall[i][j+1] - rhoUmr_wall[i][j+1] - fn_In;
+            rhoUnr[i][j+1] = Gamma_in_Rr;
+        }else{ //ただの壁
+            //rhoUnr[i][j+1] = 0.25*rhon[i][j]*vth;
+            double Gamma_wall_Rr = -rhoUir_wall[i][j+1] - rhoUmr_wall[i][j+1];
+            rhoUnr[i][j+1] = Gamma_wall_Rr;
+            rhoUnr_wall[i][j+1] = rhoUnr[i][j+1];
+        }
+    }
+    //上 壁 x4
+    for (int i=i_flc_bl[1][1]+1;i<=i_flc_bl[3][1];i++){
+        int j=j_flc_bl[3][1];
+        //rhoUnr[i][j+1] = 0.25*rhon[i][j]*vth;
+        //rhoUnr[i][j+1] = -rhoi[i][j]*Uir[i][j+1]; //Recombination
+        double Gamma_wall_Rr = -rhoUir_wall[i][j+1] - rhoUmr_wall[i][j+1];
+        rhoUnr[i][j+1] = Gamma_wall_Rr;
+        rhoUnr_wall[i][j+1] = rhoUnr[i][j+1];
+    }
+    //上 開放 x5
+    for (int i=i_flc_bl[4][0];i<=i_flc_bl[4][1];i++){
+        int j=j_flc_bl[4][1];
+        //continuous
+        double rL = (r[j]+r[j-1])/2.0;
+        double rR = (r[j]+r[j+1])/2.0;
+        double Gamma_open_Rr = fmax(rL/rR*rhoUnr_old[i][j],0.0);
+        rhoUnr[i][j+1] = Gamma_open_Rr;
+        rhoUnr_wall[i][j+1] = 0.0;
+
+        //double vth = sqrt(8.0*Boltz*Te[i][j]/(M_PI*masse));
+        //double GammaPerN_open_Rr = 0.25*vth;
+        //rhoUnr[i][j+1] = rhon[i][j]*GammaPerN_open_Rr ;
+        
+        //std::cout << Gamma_open_Rr << std::endl;
+    }
+
+    //calculation of particle balance
+    //------------------------------------
+    if(itime%ndiv_fout == 0 || itime == ntime){
+        
+        //volume integrated values
+        //------------------------------------
+        double dNndt_sum           = 0.0;
+        double nabla_rhoUn_sum     = 0.0;
+        double rate_exc_m_to_r_sum = 0.0;
+        double rate_super_sum      = 0.0;
+        double rate_exc_g_to_m_sum = 0.0;
+        double rate_exc_g_to_h_sum = 0.0;
+        double rate_d_ionz_sum     = 0.0;
+        //------------------------------------
+    
+        //calculate volume integrated of each term
+        //------------------------------------
+        for (int iblock=0;iblock<2;iblock++){ 
+            for (int i=i_flc_bl[iblock][0];i<=i_flc_bl[iblock][1];i++){ 
+                for (int j=j_flc_bl[iblock][0];j<=j_flc_bl[iblock][1];j++){
+                    
+                    //radial position at upper and lower cell interface
+                    //------------------------------------
+                    double rR = (r[j]+r[j+1])/2.0;
+                    double rL = (r[j]+r[j-1])/2.0;
+                    //------------------------------------
+
+                    //normalized radial position at upper and lower cell interface
+                    //------------------------------------
+                    double qR = (r[j]+r[j+1])/2.0/r[j];
+                    double qL = (r[j]+r[j-1])/2.0/r[j];
+                    //------------------------------------
+
+                    //BC - set adjacent flag (adjacent = 0, others = 1)
+                    //adjacent "cell" to the wall for setting zero-flux on the wall
+                    //------------------------------------
+                    //left
+                    double bLx_wall  = double(i!=i_flc_bl[0][0] || iblock != 0); //z0
+                    bLx_wall = bLx_wall*double(i!=i_flc_bl[2][0] || j>j_flc_bl[0][0]-1); //z1
+                    bLx_wall = bLx_wall*double(i!=i_flc_bl[3][0] || j>j_flc_bl[2][0]-1); //z2
+                    bLx_wall = bLx_wall*double(i!=i_flc_bl[4][0] || j<j_flc_bl[1][0]); //z4
+                    double bLx  = bLx_wall;
+                    
+                    //right
+                    double bRx_wall  = double(i!=i_flc_bl[1][1] || j<j_flc_bl[1][0]); //z3
+                    bRx_wall = bRx_wall*double(i!=i_flc_bl[4][1]); //z5
+                    double bRx  = bRx_wall;
+                    
+                    //lower
+                    double bLr_wall  = double(j!=j_flc_bl[0][0] || i>i_flc_bl[0][1]); //x0
+                    bLr_wall = bLr_wall*double(j!=j_flc_bl[2][0] || i>i_flc_bl[2][1]); //x2
+                    double bLr_cen = double(j!=j_flc_bl[3][0]); //x6
+                    double bLr  = bLr_wall*bLr_cen;
+                    
+                    //upper
+                    double bRr_wall  = double(j!=j_flc_bl[0][1] || iblock > 2 || x[i] <= width_neutIn+x6); //x1 not inlet
+                    double bRr_in  = double(j!=j_flc_bl[0][1] || iblock > 2 || x[i] > width_neutIn+x6); //x1 inlet
+                    bRr_wall = bRr_wall*double(j!=j_flc_bl[3][1] || i<i_flc_bl[1][1]+1 || i>i_flc_bl[3][1]); //x4
+                    double bRr_open  = (j!=j_flc_bl[4][1] || iblock != 4); //x5
+                    double bRr = bRr_wall*bRr_in*bRr_open;
+                    //------------------------------------
+
+                    double Gamma_in_Rr = 0.0;
+                    if(bRr_in== 0){
+                        Gamma_in_Rr = -rhoUir_wall[i][j+1] - rhoUmr_wall[i][j+1] - fn_In;
+                        //std::cout << Gamma_in_Rr << ","<<fn_In << std::endl;
+                    }
+
+                    double nabla_rhoUn = (rhoUnx[i+1][j]*bRx_wall - rhoUnx[i][j]*bLx_wall)/dx 
+                                       + (qR*rhoUnr[i][j+1]*bRr_wall - qL*rhoUnr[i][j]*bLr_wall)/dr
+                                       + (rhoUnx_wall[i+1][j] - rhoUnx_wall[i][j])/dx 
+                                       + (qR*rhoUnr_wall[i][j+1] - qL*rhoUnr_wall[i][j])/dr;
+
+                    double volume = 2.0*M_PI*r[j]*dr*dx;
+                    
+                    dNndt_sum         = dNndt_sum         + volume*(rhon[i][j] - rhon_old[i][j])/dt;
+                    nabla_rhoUn_sum   = nabla_rhoUn_sum   + volume*nabla_rhoUn;
+
+                    //generation
+                    rate_exc_m_to_r_sum = rate_exc_m_to_r_sum  + volume*rhoe[i][j]*nu_excStep[i][j];
+                    rate_super_sum      = rate_super_sum       + volume*rhoe[i][j]*nu_super[i][j];
+                    rate_exc_g_to_m_sum = rate_exc_g_to_m_sum  - volume*rhoe[i][j]*nu_excMeta[i][j];
+                    rate_exc_g_to_h_sum = rate_exc_g_to_h_sum  - volume*rhoe[i][j]*0.5*nu_exc[i][j];
+                    rate_d_ionz_sum     = rate_d_ionz_sum      - volume*rhoe[i][j]*nu_ionz[i][j];
+                }
+            }
+        }
+
+        //output particle balance for metastable
+        //------------------------------------
+        std::string char1="results/particle_balance_ground";
+        std::string char2=std::to_string(nOut);
+        std::string char_csv=".csv";
+        std::ofstream outputfile10(char1+char2+char_csv);
+        outputfile10 << std::setprecision(std::numeric_limits<double>::max_digits10) << std::scientific;
+        outputfile10<< "dN/dt (pcl/s), loss_to_bnd (pcl/s), sw-ex (pcl/s), super (pcl/s), ex-to-m (pcl/s), ex-to-h (pcl/s), direct-iz (pcl/s), sum (pcl/s)"<< std::endl;
+        outputfile10 << dNndt_sum 
+            << "," << -nabla_rhoUn_sum 
+            << "," << rate_exc_m_to_r_sum  
+            << "," << rate_super_sum 
+            << "," << rate_exc_g_to_m_sum 
+            << "," << rate_exc_g_to_h_sum
+            << "," << rate_d_ionz_sum
+            << "," << -dNndt_sum 
+                + (
+                    - nabla_rhoUn_sum
+                    + rate_exc_m_to_r_sum 
+                    + rate_super_sum 
+                    + rate_exc_g_to_m_sum 
+                    + rate_exc_g_to_h_sum 
+                    + rate_d_ionz_sum
+                )
+            << std::endl;
+        outputfile10.close();
+        //------------------------------------
+    }
+    //------------------------------------
+
+    //ゴーストセル以外で負になっているところがあれば戻す
+    int ncount = 0;
+    for (int iblock=0;iblock<n_bl-1;iblock++){ 
+        for (int i=i_flc_bl[iblock][0];i<=i_flc_bl[iblock][1];i++){ 
+            for (int j=j_flc_bl[iblock][0];j<=j_flc_bl[iblock][1];j++){
+                if(rhon[i][j]<0.0){
+                    //std::cout << "Warning negative density at (" << i <<","<<j<<") ne = " << rhon[i][j]<< std::endl; 
+                    ncount ++;
+                    rhon[i][j] = fmax(rhon_old[i][j],0.0);
+                }
+            }
+        }
+    }
+    if(ncount!=0){
+        std::cout << "negative rhon count = " << ncount << std::endl;
+    }
+
+    //エラー計算
+    error_rhon = 0.0;
+    if(icon_error == 0){
+        for (int iblock=0;iblock<n_bl-1;iblock++){ 
+            for (int i=i_flc_bl[iblock][0];i<=i_flc_bl[iblock][1];i++){ 
+                for (int j=j_flc_bl[iblock][0];j<=j_flc_bl[iblock][1];j++){
+                    double error_tmp = fabs((rhon[i][j] - rhon_old[i][j])/(rhon[i][j] + rhon_old[i][j]+1e-100)*2.0/CFL);
+                    if(error_tmp > error_rhon){
+                        error_rhon = error_tmp;
+                    }
+                }
+            }
+        }
+    }else{
+        double ncount = 0;
+        for (int iblock=0;iblock<n_bl-1;iblock++){ 
+            for (int i=i_flc_bl[iblock][0];i<=i_flc_bl[iblock][1];i++){ 
+                for (int j=j_flc_bl[iblock][0];j<=j_flc_bl[iblock][1];j++){
+                    error_rhon += pow(rhon[i][j]-rhon_old[i][j],2)/(pow(rhon_old[i][j],2)+1e9)/CFL;
+                    ncount++;
+                }
+            }
+        }
+        error_rhon = sqrt(error_rhon/double(ncount));
+    }
+
+}
+
 
 //*****************************************************************
 //**                                                             **

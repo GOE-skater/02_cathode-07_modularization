@@ -62,7 +62,7 @@ void output(){
     //std::ofstream outputfile1_1(char1+"_tmp"+char2+char_csv);
     //outputfile1<<"x,rho,Ui,rhoUix,Ue,rhoUex,rhoUex_E,rhoUex_D,E,phi,psi,rho_th,U_th,E_th,phi_th,psi_th,rate_ionize,divi,dive1,dive2,dive3, div_poisson, LHS, RHS,zero" << std::endl;
     //outputfile1<<"x,rhon,rho,rhoe(test),Uix,rhoUix,Uex,Uey,rhoUex,rhoUey,Te,heat_flux,Bz,E,phi,nu_m,nu_en,nu_ei,nu_ionz,nu_exc,nu_wall,nu_ano,mue_parae,mue_perp,Halle,jd,Id,rate_eloss,rate_ionize,divi,dive,divn,engy_LHS,engy_LHS1,engy_LHS2,engy_LHS3,engy_LHS4,engy_RHS,engy_RHS1,engy_RHS2,engy_RHS3,zero" << std::endl;
-    outputfile1<<"i,j,x,r,rhoi,rhoe,Uix,Uir,Uip,Ui_mag,Te,Te_eff,rhoeps,qex,qer,Gx,Gr,phi,Ex,Er,rhoUex,rhoUer,rhoUep,Uex,Uer,Uep,Ue_mag,rate_ionize,nu_m,nu_m1,nu_ionz,nu_ionzStep,nu_excStep,nu_exc,nu_excMeta,nui_m,mu_para,mu_perp,mu_x,mu_r,mu_c,kappa_para,kappa_perp,kappa_x,kappa_r,kappa_c,cx,cr,sx,sr,Ap,Bx,Br,Bmag,Omega,Omegax,Omegar,Pabs,rate_eloss,Loss,P_ES,Pnet,nabla_rhoUe,nabla_rhoUa,nabla_rhoUi,nabla_rhoUm,rate_rhom,rateG_rhom,rateL_rhom,nabla_G,nabla_Ga,rhom,rhoUmx,rhoUmr,Umx,Umr,limit,Debye,phi_analytical,|Ex_mw|,|Er_mw|,|Ep_mw|,rate_ionize_direct,rate_ionize_stepwise,rhon,d|B|/dx,d|B|/dr,rate_eloss_n,rate_eloss_m,distECR,nu_eff,Jx_exc,Jr_exc,Jp_exc,scx,scr,rhoq_sc,nUex,nUer,nabla_nUe,rhoUnx,rhoUnr,nabla_rhoUn,rate_rhon,nu_super,deltaB,nu_ano,nu_ano_IAT,jdgBnd_flc,Mache,zero" << std::endl;
+    outputfile1<<"i,j,x,r,rhoi,rhoe,Uix,Uir,Uip,Ui_mag,rhoUix,rhoUir,rhoUip,Te,Te_eff,rhoeps,qex,qer,Gx,Gr,phi,Ex,Er,rhoUex,rhoUer,rhoUep,Uex,Uer,Uep,Ue_mag,rate_ionize,nu_m,nu_m1,nu_ionz,nu_ionzStep,nu_excStep,nu_exc,nu_excMeta,nui_m,mu_para,mu_perp,mu_x,mu_r,mu_c,kappa_para,kappa_perp,kappa_x,kappa_r,kappa_c,cx,cr,sx,sr,Ap,Bx,Br,Bmag,Omega,Omegax,Omegar,Pabs,rate_eloss,Loss,P_ES,Pnet,nabla_rhoUe,nabla_rhoUa,nabla_rhoUi,nabla_rhoUm,rate_rhom,rateG_rhom,rateL_rhom,nabla_G,nabla_Ga,rhom,rhoUmx,rhoUmr,Umx,Umr,limit,Debye,phi_analytical,|Ex_mw|,|Er_mw|,|Ep_mw|,rate_ionize_direct,rate_ionize_stepwise,rhon,d|B|/dx,d|B|/dr,rate_eloss_n,rate_eloss_m,distECR,nu_eff,Jx_exc,Jr_exc,Jp_exc,scx,scr,rhoq_sc,nUex,nUer,nabla_nUe,rhoUnx,rhoUnr,nabla_rhoUn,rate_rhon,nu_super,deltaB,nu_ano,nu_ano_IAT,jdgBnd_flc,Mache,zero" << std::endl;
     //outputfile1_1 << "i,j,x,r,rhom,rhoUmx,rhoUmr,nabla_rhoUm,rhon,rhoUnx,rhoUnr,nabla_rhoUn,zero" << std::endl;
     
     for(int i=1;i<=ni;i++){
@@ -71,6 +71,36 @@ void output(){
             double rR = (r[j]+r[j+1])/2.0;
             double qR = (r[j]+r[j+1])/2.0/r[j];
             double qL = (r[j]+r[j-1])/2.0/r[j];
+
+            //BC - set flag for adjacent to the wall, open, or central axis (adjacent = 0, others = 1)
+            //------------------------------------
+            //left
+            //double bLx_wall  = double(i!=i_flc_bl[0][0] || iblock != 0); //z0
+            double bLx_wall  = double(i!=i_flc_bl[0][0]  || j< j_flc_bl[0][0]); //z0
+            bLx_wall = bLx_wall*double(i!=i_flc_bl[2][0] || j>j_flc_bl[0][0]-1); //z1
+            bLx_wall = bLx_wall*double(i!=i_flc_bl[3][0] || j>j_flc_bl[2][0]-1); //z2
+            bLx_wall = bLx_wall*double(i!=i_flc_bl[4][0] || j<j_flc_bl[1][0]); //z4
+            double bLx  = bLx_wall;
+            
+            //right
+            double bRx_wall  = double(i!=i_flc_bl[1][1] || j<j_flc_bl[1][0]); //z3
+            bRx_wall = bRx_wall*double(i!=i_flc_bl[4][1]); //z5
+            double bRx  = bRx_wall;
+            
+            //lower
+            double bLr_wall  = double(j!=j_flc_bl[0][0] || i>i_flc_bl[0][1]); //x0
+            bLr_wall = bLr_wall*double(j!=j_flc_bl[2][0] || i>i_flc_bl[2][1]); //x2
+            double bLr_cen = double(j!=j_flc_bl[3][0]); //x6
+            double bLr  = bLr_wall*bLr_cen;
+            
+            //upper
+            //double bRr_wall  = double(j!=j_flc_bl[0][1] || iblock > 2); //x1
+            double bRr_wall  = double(j!=j_flc_bl[0][1] || i>i_flc_bl[1][1]); //x1
+            bRr_wall = bRr_wall*double(j!=j_flc_bl[3][1] || i<i_flc_bl[1][1]+1 || i>i_flc_bl[3][1]); //x4
+            //w/o x5
+            double bRr = bRr_wall;
+            //------------------------------------
+
 
             double Bmag = sqrt(Bx[i][j]*Bx[i][j] + Br[i][j]*Br[i][j]);
             double absB_Lx = sqrt(Bx[i-1][j]*Bx[i-1][j] + Br[i-1][j]*Br[i-1][j]);
@@ -97,6 +127,10 @@ void output(){
             double Uix_tmp = (Uix[i][j] + Uix[i+1][j])/2.0;
             double Uir_tmp = (rL*Uir[i][j] + rR*Uir[i][j+1])/(2.0*r[j]);
             double Uip_tmp = Uip[i][j];
+
+            double rhoUix_tmp = (rhoUix[i][j] + rhoUix[i+1][j])/2.0;
+            double rhoUir_tmp = (rL*rhoUir[i][j] + rR*rhoUir[i][j+1])/(2.0*r[j]);
+            double rhoUip_tmp = rhoi[i][j]*Uip[i][j];
 
             double Ui_mag = sqrt(Uix_tmp*Uix_tmp + Uir_tmp*Uir_tmp);
             
@@ -129,12 +163,19 @@ void output(){
 
             //if(j==1) std::cout << rhoUer[i][j-1] << std::endl;
 
-            double nabla_rhoUe = (rhoUex[i+1][j]-rhoUex[i][j])/dx + (qR*rhoUer[i][j+1]-qL*rhoUer[i][j])/dr;
+            //double nabla_rhoUe = (rhoUex[i+1][j]-rhoUex[i][j])/dx + (qR*rhoUer[i][j+1]-qL*rhoUer[i][j])/dr;
+            double nabla_rhoUe = (rhoUex[i+1][j] - rhoUex[i][j])/dx + (qR*rhoUer[i][j+1] - qL*rhoUer[i][j])/dr;
 
-            double nabla_rhoUi = (rhoi_Rx*Uix[i+1][j]-rhoi_Lx*Uix[i][j])/dx + (qR*rhoi_Rr*Uir[i][j+1]-qL*rhoi_Lr*Uir[i][j])/dr;
+            //double nabla_rhoUi = (rhoi_Rx*Uix[i+1][j]-rhoi_Lx*Uix[i][j])/dx + (qR*rhoi_Rr*Uir[i][j+1]-qL*rhoi_Lr*Uir[i][j])/dr;
+            double nabla_rhoUi = (rhoUix[i+1][j]*bRx_wall - rhoUix[i][j]*bLx_wall)/dx 
+                                       + (qR*rhoUir[i][j+1]*bRr_wall -qL*rhoUir[i][j]*bLr_wall)/dr
+                                       + (rhoUix_wall[i+1][j] - rhoUix_wall[i][j])/dx 
+                                       + (qR*rhoUir_wall[i][j+1] - qL*rhoUir_wall[i][j])/dr;
+
             double nabla_rhoUm = (rhoUmx[i+1][j]-rhoUmx[i][j])/dx + (qR*rhoUmr[i][j+1]-qL*rhoUmr[i][j])/dr;
             double nabla_rhoUn = (rhoUnx[i+1][j]-rhoUnx[i][j])/dx + (qR*rhoUnr[i][j+1]-qL*rhoUnr[i][j])/dr;
 
+            double rate_rhon = (nu_excStep[i][j] + nu_super[i][j])*rhoe[i][j] - (nu_excMeta[i][j] + 0.5*nu_exc[i][j] + nu_ionz[i][j])*rhoe[i][j];
             double lapPhi =  -(Ex[i+1][j] - Ex[i][j])/dx - (qR*Er[i][j+1] - qL*Er[i][j])/dr;
             double nabla_nUe = (nUex[i+1][j]-nUex[i][j])/dx + (qR*nUer[i][j+1]-qL*nUer[i][j])/dr;
             double nUex_tmp = (nUex[i][j] + nUex[i+1][j])/2.0;
@@ -168,6 +209,7 @@ void output(){
             outputfile1<< i << ","<< j << "," << x[i]<< ","<< r[j]
                 << "," << rhoi[i][j]*jdgBnd_flc[i][j] << "," << rhoe[i][j] *jdgBnd_flc[i][j]
                 << ","<< Uix_tmp*jdgBnd_flc[i][j] << ","<< Uir_tmp*jdgBnd_flc[i][j]<< ","<< Uip_tmp*jdgBnd_flc[i][j]<< "," << Ui_mag*jdgBnd_flc[i][j]
+                << ","<< rhoUix_tmp*jdgBnd_flc[i][j] << ","<< rhoUir_tmp*jdgBnd_flc[i][j]<< ","<< rhoUip_tmp*jdgBnd_flc[i][j]
                 << ","<< Te[i][j]*Boltz/e0*jdgBnd_flc[i][j]
                 << ","<< Te_eff*Boltz/e0*jdgBnd_flc[i][j]
                 << ","<< rhoeps[i][j]*jdgBnd_flc[i][j]

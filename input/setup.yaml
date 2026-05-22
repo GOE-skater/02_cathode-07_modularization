@@ -4,9 +4,20 @@
 
 microwave:
   Pmw: 8.0                # (double) Microwave power [W], previous/example: 8
+  icon_mwRef: 0           # (int) Whether to include the microwave reflection
+  icon_impTest: 0         # (int) conduct impedance test
   omegam: 26703537556e0   # (double) Microwave angular frequency
   nu_eff: 2.0e9           # (double) Effective collision frequency, sqrt(vth * omegam / deltaB)
   deltaECR: 1.0e-3        # (double) Width of the ECR region
+  S11_mag: 0.0            # (double) Magnitude of S11
+  S11_arg_deg: 0.0        # (double) Argument of S11 (deg)
+  S21_mag: 1.0            # (double) Magnitude of S21
+  S21_arg_deg: 0.0        # (double) Argument of S21 (deg)
+  S12_mag: 1.0            # (double) Magnitude of S12
+  S12_arg_deg: 0.0        # (double) Argument of S12 (deg)
+  S22_mag: 0.0            # (double) Magnitude of S22
+  S22_arg_deg: 0.0        # (double) Argument of S22 (deg)
+  Z0_base: 38.4885        # (double) Base impedance (Ohm) 38.4885 54.4052
 
 plasma:
   Ti: 300.0               # (double) Ion temperature
@@ -16,7 +27,7 @@ plasma:
   Te_rep_eV: 0.1          # (double) Representative electron temperature for the ion scheme [eV]
 
 material:
-  epsr_diele: 2.1         # (double) Relative permittivity of the dielectric material
+  epsr_diele: 1.20900093980893  # (double) Relative permittivity of the dielectric material 2.1
 
 bias:
   V_bias: 35.0            # (double) Bias voltage, previous/example: 20
@@ -106,6 +117,6 @@ simulation:
 # ============================================================
 
 output:
-  icon_chk: 0             # (int) Whether to output check files
+  icon_chk: 1             # (int) Whether to output check files
   icon_gnuRes: 1          # (int) Whether to display results using gnuplot
   ndiv_fout: 2000         # (int) Result file output interval

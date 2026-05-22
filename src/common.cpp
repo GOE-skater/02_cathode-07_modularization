@@ -32,14 +32,27 @@ int n_bl = 6; //計算ブロック数
 double xL= 0.00; //計算領域x左端
 double xR= 0.0388; //計算領域x右端 0.031 + 0.0078
 double rmin= 0.0; //計算領域r左端
-double rmax= 0.014; //計算領域r右端
+double rmax= 0.014; //計算領域r右端 2.0e-3 0.014
 
 //パラメータ設定
-std::complex<double> J1r_exc(0.0,776530.1154*sqrt(1.34895*0.91779)); //励起電流
+std::complex<double> J1r_exc(776530.1154*sqrt(1.34895*0.91779*1.79268E-14),0.0); //励起電流
 double Pmw = 5.0; //マイクロ波電力 (W)
+int icon_mwRef = 1; //反射を解くか
+int icon_impTest= 1;      // (int) conduct impedance test
 double omegam = 2.0*M_PI*2.45e9; //マイクロ波周波数
 double nu_eff = 1.0e9; //有効衝突周波数 = sqrt(vth*omegam/deltaB)
 double deltaECR = 1e-3; //ECRの領域の幅
+double S11_mag = 0.0;     // (double) Magnitude of S11
+double S11_arg_deg = 0.0; // (double) Argument of S11 (deg)
+double S21_mag = 1.0;     // (double) Magnitude of S21
+double S21_arg_deg = 0.0; // (double) Argument of S21 (deg)
+double S12_mag = 1.0;     // (double) Magnitude of S12
+double S12_arg_deg = 0.0; // (double) Argument of S12 (deg)
+double S22_mag = 0.0;     // (double) Magnitude of S22
+double S22_arg_deg = 0.0; // (double) Argument of S22 (deg)
+double Z0_base = 0.0;     // (double) Base impedance (Ohm)
+
+//plasma
 double Ti = 300; //イオン温度
 double Tn = 300; //中性粒子温度
 double rhon_ini = 1.0/(Boltz*Tn); //中性粒子密度 (一定値) m^-3 @1Pa

@@ -73,31 +73,24 @@ int main(int argc, char *argv[])
     //初期化
     inputParam(); //setup.csvからインプットパラメータを読み込み
     iniparameter(); //パラメータ初期化
-    makeBoundary(); //形状の生成
     
+    if(icon_impTest == 1){
+        
+        makeBoundary_impedanceTest(); //形状の生成
+    
+        solve_Microwave_impedanceTest(); //マイクロ波更新
+        output_phase();
+        //output(); //ファイルにアウトプット
+        return 0;
+    }
+
+    makeBoundary(); //形状の生成
     input_Bfield_data(); //磁場の読み込み
     input_SEE_data();
     makeProfile(); //事前定義プロファイルの作成
-    
     input_restart_data(); //リスタートデータの読み込み
     input_BOLSIG_data(); //レート係数の読み込み
     update_transport_coef(); //輸送係数更新
-
-    /*
-    //test
-    std::cout << "Te = 1.5 eV ," 
-        << " , " <<func_Te(coefEISEE_eb_table,1.5*e0/Boltz,dTe_SEE) 
-        << " , " <<func_Te(coefEISEE_rd_table,1.5*e0/Boltz,dTe_SEE) 
-        << " , " <<func_Te(coefEISEE_ts_table,1.5*e0/Boltz,dTe_SEE) << std::endl;
-    
-    std::cout << "Te = 3.25eV ," 
-        << " , " <<func_Te(coefEISEE_eb_table,3.25*e0/Boltz,dTe_SEE) 
-        << " , " <<func_Te(coefEISEE_rd_table,3.25*e0/Boltz,dTe_SEE) 
-        << " , " <<func_Te(coefEISEE_ts_table,3.25*e0/Boltz,dTe_SEE) << std::endl;
-    abort();
-    */
-
-    //update_transport_coef_mod(); //nu_effの範囲の修正適用
 
     //マイクロ波計算
     {

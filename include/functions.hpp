@@ -15,6 +15,7 @@ extern double truncate(double c);
 /******************** initial.cpp ********************/
 extern void iniparameter();
 extern void makeBoundary();
+extern void makeBoundary_impedanceTest();
 extern void makeProfile();
 
 /******************** input.cpp ********************/
@@ -25,6 +26,7 @@ extern void input_BOLSIG_data();
 extern void input_SEE_data();
 /******************** EMfield.cpp ********************/
 extern void solve_Microwave();
+extern void solve_Microwave_impedanceTest();
 extern void update_energy_profile();
 
 /******************** fluid.cpp ********************/

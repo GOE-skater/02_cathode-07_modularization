@@ -98,9 +98,20 @@ void inputParam()
 
         category = "microwave";
         READ_DOUBLE(category, Pmw);
+        READ_INT(category,icon_mwRef);
+        READ_INT(category,icon_impTest);
         READ_DOUBLE(category, omegam);
         READ_DOUBLE(category, nu_eff);
         READ_DOUBLE(category, deltaECR);
+        READ_DOUBLE(category, S11_mag);     // (double) Magnitude of S11
+        READ_DOUBLE(category, S11_arg_deg); // (double) Argument of S11 (deg)
+        READ_DOUBLE(category, S21_mag);     // (double) Magnitude of S21
+        READ_DOUBLE(category, S21_arg_deg); // (double) Argument of S21 (deg)
+        READ_DOUBLE(category, S12_mag);     // (double) Magnitude of S12
+        READ_DOUBLE(category, S12_arg_deg); // (double) Argument of S12 (deg)
+        READ_DOUBLE(category, S22_mag);     // (double) Magnitude of S22
+        READ_DOUBLE(category, S22_arg_deg); // (double) Argument of S22 (deg)
+        READ_DOUBLE(category, Z0_base); // (double) Argument of S22 (deg)
 
         category = "plasma";
         READ_DOUBLE(category, Ti);

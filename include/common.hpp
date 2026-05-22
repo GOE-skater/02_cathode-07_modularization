@@ -35,9 +35,21 @@ extern double rmax; //計算領域r右端
 //パラメータ設定
 extern std::complex<double> J1r_exc; //励起電流
 extern double Pmw; //マイクロ波電力 (W)
+extern int icon_mwRef; //反射を解くか
+extern int icon_impTest;      // (int) conduct impedance test
 extern double omegam ; //マイクロ波周波数
 extern double nu_eff; //有効衝突周波数 = sqrt(vth*omegam/deltaB)
 extern double deltaECR; //ECRの領域の幅
+extern double S11_mag;     // (double) Magnitude of S11
+extern double S11_arg_deg; // (double) Argument of S11 (deg)
+extern double S21_mag;     // (double) Magnitude of S21
+extern double S21_arg_deg; // (double) Argument of S21 (deg)
+extern double S12_mag;     // (double) Magnitude of S12
+extern double S12_arg_deg; // (double) Argument of S12 (deg)
+extern double S22_mag;     // (double) Magnitude of S22
+extern double S22_arg_deg; // (double) Argument of S22 (deg)
+extern double Z0_base;     // (double) Base impedance (Ohm)
+
 extern double Ti; //イオン温度
 extern double Tn; //中性粒子温度
 extern double rhon_ini; //中性粒子密度 (一定値)

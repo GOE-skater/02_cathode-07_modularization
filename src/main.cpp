@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
     //input data
     //-------------------------------------
-    Params prm;
+    Params pm;
     BolsigVec bolv;
     //-------------------------------------
 
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
     FILE* rhoi_plot;
     FILE* Uex_plot;
 
-    if(prm.icon_gnuRes == 1){
+    if(pm.icon_gnuRes == 1){
         error_plot = popen("gnuplot", "w"); 
         fprintf(error_plot, "set title 'Error History'\n");
 
@@ -98,21 +98,22 @@ int main(int argc, char *argv[])
 
     //parameter input
     //-------------------------------------
-    inputF.inputParam(prm,"setup.yaml");
+    inputF.inputParam(pm,"setup.yaml");
     //-------------------------------------
 
     //initialization of arrays
     //-------------------------------------
-    GridCenter gc(prm.ni,prm.nj);
-    GridInterface gi(prm.ni,prm.nj);
+    GridCenter gc(pm.ni,pm.nj);
+    GridInterfaceX gx(pm.ni,pm.nj);
+    GridInterfaceR gr(pm.ni,pm.nj);
     //-------------------------------------
 
     //initialization of parameters
     //-------------------------------------
-    iniF.iniParam(prm,gc,gi); 
+    iniF.iniParam(pm,gc,gx,gr); 
     //-------------------------------------
     
-    if(prm.icon_impTest == 1){
+    if(pm.icon_impTest == 1){
         
         makeBoundary_impedanceTest(); //形状の生成
     

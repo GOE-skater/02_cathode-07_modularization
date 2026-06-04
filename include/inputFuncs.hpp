@@ -35,7 +35,7 @@ class InputFuncs
     private:
 
     public:
-        void inputParam(Params &prm,string inputFileName);
+        void inputParam(Params &pm,string inputFileName);
 
 
 };
@@ -47,7 +47,7 @@ class InputFuncs
 //**           void param                                        **
 //**                                                             **
 //*****************************************************************
-void InputFuncs::inputParam(Params &prm, string inputFileName)
+void InputFuncs::inputParam(Params &pm, string inputFileName)
 {
 
     const std::string filename = "input/"+inputFileName;
@@ -121,103 +121,103 @@ void InputFuncs::inputParam(Params &prm, string inputFileName)
         std::string category;
 
         category = "microwave";
-        READ_DOUBLE(category, prm.Pmw);
-        READ_INT(category,    prm.icon_mwRef);
-        READ_INT(category,    prm.icon_impTest);
-        READ_DOUBLE(category, prm.omegam);
-        READ_DOUBLE(category, prm.nu_eff);
-        READ_DOUBLE(category, prm.deltaECR);
-        READ_DOUBLE(category, prm.S11_mag);     // (double) Magnitude of S11
-        READ_DOUBLE(category, prm.S11_arg_deg); // (double) Argument of S11 (deg)
-        READ_DOUBLE(category, prm.S21_mag);     // (double) Magnitude of S21
-        READ_DOUBLE(category, prm.S21_arg_deg); // (double) Argument of S21 (deg)
-        READ_DOUBLE(category, prm.S12_mag);     // (double) Magnitude of S12
-        READ_DOUBLE(category, prm.S12_arg_deg); // (double) Argument of S12 (deg)
-        READ_DOUBLE(category, prm.S22_mag);     // (double) Magnitude of S22
-        READ_DOUBLE(category, prm.S22_arg_deg); // (double) Argument of S22 (deg)
-        READ_DOUBLE(category, prm.Z0_base); // (double) Argument of S22 (deg)
+        READ_DOUBLE(category, pm.Pmw);
+        READ_INT(category,    pm.icon_mwRef);
+        READ_INT(category,    pm.icon_impTest);
+        READ_DOUBLE(category, pm.omegam);
+        READ_DOUBLE(category, pm.nu_eff);
+        READ_DOUBLE(category, pm.deltaECR);
+        READ_DOUBLE(category, pm.S11_mag);     // (double) Magnitude of S11
+        READ_DOUBLE(category, pm.S11_arg_deg); // (double) Argument of S11 (deg)
+        READ_DOUBLE(category, pm.S21_mag);     // (double) Magnitude of S21
+        READ_DOUBLE(category, pm.S21_arg_deg); // (double) Argument of S21 (deg)
+        READ_DOUBLE(category, pm.S12_mag);     // (double) Magnitude of S12
+        READ_DOUBLE(category, pm.S12_arg_deg); // (double) Argument of S12 (deg)
+        READ_DOUBLE(category, pm.S22_mag);     // (double) Magnitude of S22
+        READ_DOUBLE(category, pm.S22_arg_deg); // (double) Argument of S22 (deg)
+        READ_DOUBLE(category, pm.Z0_base); // (double) Argument of S22 (deg)
 
         category = "plasma";
-        READ_DOUBLE(category, prm.Ti);
-        READ_DOUBLE(category, prm.Tn);
-        READ_DOUBLE(category, prm.rhon_ini);
-        READ_DOUBLE(category, prm.DmN);
-        READ_DOUBLE(category, prm.Te_rep_eV);
+        READ_DOUBLE(category, pm.Ti);
+        READ_DOUBLE(category, pm.Tn);
+        READ_DOUBLE(category, pm.rhon_ini);
+        READ_DOUBLE(category, pm.DmN);
+        READ_DOUBLE(category, pm.Te_rep_eV);
 
         category = "material";
-        READ_DOUBLE(category, prm.epsr_diele);
+        READ_DOUBLE(category, pm.epsr_diele);
 
         category = "bias";
-        READ_DOUBLE(category, prm.V_bias);
+        READ_DOUBLE(category, pm.V_bias);
 
         category = "neutral_inlet";
-        READ_DOUBLE(category, prm.Q_neutIn_mgs);
-        READ_DOUBLE(category, prm.width_neutIn);
+        READ_DOUBLE(category, pm.Q_neutIn_mgs);
+        READ_DOUBLE(category, pm.width_neutIn);
 
         category = "transport_model";
-        READ_INT(category,    prm.icon_Bohm);
-        READ_INT(category,    prm.icon_Sagdeev);
-        READ_DOUBLE(category, prm.alpha_Bohm);
-        READ_DOUBLE(category, prm.scale_inertia);
+        READ_INT(category,    pm.icon_Bohm);
+        READ_INT(category,    pm.icon_Sagdeev);
+        READ_DOUBLE(category, pm.alpha_Bohm);
+        READ_DOUBLE(category, pm.scale_inertia);
 
         category = "see";
-        READ_DOUBLE(category, prm.coefIISEE_ts);
-        READ_DOUBLE(category, prm.coefMISEE_ts);
-        READ_DOUBLE(category, prm.Te_emitSEE_eV);
-        READ_DOUBLE(category, prm.ratioEngy_EISEE_rd);
+        READ_DOUBLE(category, pm.coefIISEE_ts);
+        READ_DOUBLE(category, pm.coefMISEE_ts);
+        READ_DOUBLE(category, pm.Te_emitSEE_eV);
+        READ_DOUBLE(category, pm.ratioEngy_EISEE_rd);
 
         category = "scheme";
-        READ_INT(category,    prm.icon_PC);
-        READ_INT(category,    prm.icon_inertia);
-        READ_INT(category,    prm.icon_adp_dt);
-        READ_DOUBLE(category, prm.dt_ini);
-        READ_INT(category,    prm.ndt_i);
-        READ_INT(category,    prm.ndt_m);
-        READ_INT(category,    prm.ndt_n);
-        READ_DOUBLE(category, prm.CFL);
+        READ_INT(category,    pm.icon_PC);
+        READ_INT(category,    pm.icon_inertia);
+        READ_INT(category,    pm.icon_adp_dt);
+        READ_DOUBLE(category, pm.dt_ini);
+        READ_INT(category,    pm.ndt_i);
+        READ_INT(category,    pm.ndt_m);
+        READ_INT(category,    pm.ndt_n);
+        READ_DOUBLE(category, pm.CFL);
 
         category = "solver";
-        READ_DOUBLE(category, prm.error_cnv_SOR_Ui);
-        READ_INT(category,    prm.maxITR_SOR_Ui);
-        READ_INT(category,    prm.icon_iter_Ui);
+        READ_DOUBLE(category, pm.error_cnv_SOR_Ui);
+        READ_INT(category,    pm.maxITR_SOR_Ui);
+        READ_INT(category,    pm.icon_iter_Ui);
 
-        READ_DOUBLE(category, prm.error_cnv_SOR_rhoi);
-        READ_INT(category,    prm.maxITR_SOR_rhoi);
-        READ_INT(category,    prm.icon_iter_rhoi);
+        READ_DOUBLE(category, pm.error_cnv_SOR_rhoi);
+        READ_INT(category,    pm.maxITR_SOR_rhoi);
+        READ_INT(category,    pm.icon_iter_rhoi);
 
-        READ_DOUBLE(category, prm.error_cnv_SOR_phi);
-        READ_INT(category,    prm.maxITR_SOR_phi);
-        READ_INT(category,    prm.icon_iter_phi);
-        READ_DOUBLE(category, prm. error_cnv_HES_phi);
-        READ_INT(category,    prm.maxITR_HES_phi);
+        READ_DOUBLE(category, pm.error_cnv_SOR_phi);
+        READ_INT(category,    pm.maxITR_SOR_phi);
+        READ_INT(category,    pm.icon_iter_phi);
+        READ_DOUBLE(category, pm. error_cnv_HES_phi);
+        READ_INT(category,    pm.maxITR_HES_phi);
 
-        READ_DOUBLE(category, prm.error_cnv_SOR_rhoe);
-        READ_INT(category,    prm.maxITR_SOR_rhoe);
-        READ_INT(category,    prm.icon_iter_rhoe);
-        READ_DOUBLE(category, prm.error_cnv_HES_rhoe);
-        READ_INT(category,    prm.maxITR_HES_rhoe);
+        READ_DOUBLE(category, pm.error_cnv_SOR_rhoe);
+        READ_INT(category,    pm.maxITR_SOR_rhoe);
+        READ_INT(category,    pm.icon_iter_rhoe);
+        READ_DOUBLE(category, pm.error_cnv_HES_rhoe);
+        READ_INT(category,    pm.maxITR_HES_rhoe);
 
-        READ_DOUBLE(category, prm.error_cnv_SOR_rhoeps);
-        READ_INT(category,    prm.maxITR_SOR_rhoeps);
-        READ_INT(category,    prm.icon_iter_rhoeps);
-        READ_DOUBLE(category, prm.error_cnv_HES_rhoeps);
-        READ_INT(category,    prm.maxITR_HES_rhoeps);
+        READ_DOUBLE(category, pm.error_cnv_SOR_rhoeps);
+        READ_INT(category,    pm.maxITR_SOR_rhoeps);
+        READ_INT(category,    pm.icon_iter_rhoeps);
+        READ_DOUBLE(category, pm.error_cnv_HES_rhoeps);
+        READ_INT(category,    pm.maxITR_HES_rhoeps);
 
         category = "microwave_coupling";
-        READ_INT(category,    prm.ndiv_MW);
+        READ_INT(category,    pm.ndiv_MW);
 
         category = "relaxation";
-        READ_DOUBLE(category, prm.beta_rhoe);
-        READ_DOUBLE(category, prm.beta_rhoUe);
+        READ_DOUBLE(category, pm.beta_rhoe);
+        READ_DOUBLE(category, pm.beta_rhoUe);
 
         category = "simulation";
-        READ_INT(category,    prm.ntime);
-        READ_INT(category,    prm.icon_autoFinish);
+        READ_INT(category,    pm.ntime);
+        READ_INT(category,    pm.icon_autoFinish);
 
         category = "output";
-        READ_INT(category,    prm.icon_chk);
-        READ_INT(category,    prm.icon_gnuRes);
-        READ_INT(category,    prm.ndiv_fout);
+        READ_INT(category,    pm.icon_chk);
+        READ_INT(category,    pm.icon_gnuRes);
+        READ_INT(category,    pm.ndiv_fout);
     }
     catch (const std::exception& e) {
         std::cout << std::endl;

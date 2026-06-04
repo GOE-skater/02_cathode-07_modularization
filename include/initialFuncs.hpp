@@ -21,8 +21,8 @@ class InitialFuncs
     private:
 
     public:
-        void iniParam(Params &prm,GridCenter &gc,GridInterface &gi);
-        void makeBOundary(Params &prm,GridCenter &gc,GridInterface &gi);
+        void iniParam(Params &pm,GridCenter &gc,GridInterfaceX &gx,GridInterfaceR &gr);
+        void makeBoundary(Params &pm, GridCenter &gc, GridInterfaceX &gx, GridInterfaceR &gr);
 };
 
 //*****************************************************************
@@ -30,43 +30,43 @@ class InitialFuncs
 //**           void param                                        **
 //**                                                             **
 //*****************************************************************
-void InitialFuncs::iniParam(Params &prm,GridCenter &gc,GridInterface &gi)
+void InitialFuncs::iniParam(Params &pm,GridCenter &gc,GridInterfaceX &gx,GridInterfaceR &gr)
 {
     
     //******************* Initialization **************************
     //domain setting
     //--------------------------------
-    prm.Lx = prm.xR - prm.xL;
-    prm.Lr = prm.rmax - prm.rmin;
-    prm.dx = prm.Lx/double(prm.ni);
-    prm.dr = prm.Lr/double(prm.nj);
-    std::cout << "dx = " << prm.dx<< " dr = " << prm.dr << std::endl;
+    pm.Lx = pm.xR - pm.xL;
+    pm.Lr = pm.rmax - pm.rmin;
+    pm.dx = pm.Lx/double(pm.ni);
+    pm.dr = pm.Lr/double(pm.nj);
+    std::cout << "dx = " << pm.dx<< " dr = " << pm.dr << std::endl;
     //--------------------------------
 
     //time step
     //--------------------------------
-    prm.dt = prm.dt_ini;
+    pm.dt = pm.dt_ini;
     //--------------------------------
 
     //mesh Gegeration
     //--------------------------------
-    for (int i = 0; i < prm.ni+2; i++){
-        gc.x[i] = prm.xL+(i-0.5)*prm.dx;
+    for (int i = 0; i < pm.ni+2; i++){
+        gc.x[i] = pm.xL+(i-0.5)*pm.dx;
     }
-    for (int j = 0; j < prm.nj+2; j++){
-        gc.r[j] = prm.rmin+(j-0.5)*prm.dr;
+    for (int j = 0; j < pm.nj+2; j++){
+        gc.r[j] = pm.rmin+(j-0.5)*pm.dr;
     }
     //--------------------------------
 
     //Give the r-directin current density Jr at x = 0.01 + dx/2, 0.003 < r < 0.006
-    double i_exc = int(0.0002/prm.dx + 0.5); //5
-    double j_exc_min = int(0.0008/prm.dr + 0.5) + 2; //6
-    double j_exc_max = int(0.0020/prm.dr + 0.5); //10
+    double i_exc = int(0.0002/pm.dx + 0.5); //5
+    double j_exc_min = int(0.0008/pm.dr + 0.5) + 2; //6
+    double j_exc_max = int(0.0020/pm.dr + 0.5); //10
     for (int j=j_exc_min;j<=j_exc_max;j++){
         //J1r[i_exc][j] = J1r_exc;
 
         double r_tmp = (gc.r[j] + gc.r[j-1])/2.0;
-        gi.J1r[i_exc][j] = prm.J1r_exc/r_tmp/prm.dx;
+        gr.J1r[i_exc][j] = pm.J1r_exc/r_tmp/pm.dx;
 
         std::cout << i_exc << ","<<j << std::endl;
     }
@@ -82,7 +82,7 @@ void InitialFuncs::iniParam(Params &prm,GridCenter &gc,GridInterface &gi)
 //**           void makeBoundary                                 **
 //**                                                             **
 //*****************************************************************
-void makeBoundary(Params &prm, GridCenter &gc, GridInterface &gi)
+void InitialFuncs::makeBoundary(Params &pm, GridCenter &gc, GridInterfaceX &gx, GridInterfaceR &gr)
 {
     
     double x_tmp = 0.0;
@@ -95,54 +95,54 @@ void makeBoundary(Params &prm, GridCenter &gc, GridInterface &gi)
     //double x5 = 20.6e-3;
     //double x6 =  0.0e-3;
 
-    prm.x1 =  0.0e-3;
-    prm.x2 =  5.6e-3 + 7.8e-3; //5.5 mm
-    prm.x3 = 10.0e-3 + 7.8e-3;
-    prm.x4 = 15.0e-3 + 7.8e-3;
-    prm.x5 = 20.0e-3 + 7.8e-3;
-    prm.x6 =  0.0e-3 + 7.8e-3;
+    pm.x1 =  0.0e-3;
+    pm.x2 =  5.6e-3 + 7.8e-3; //5.5 mm
+    pm.x3 = 10.0e-3 + 7.8e-3;
+    pm.x4 = 15.0e-3 + 7.8e-3;
+    pm.x5 = 20.0e-3 + 7.8e-3;
+    pm.x6 =  0.0e-3 + 7.8e-3;
     
-    prm.r1 =  0.8e-3;
-    prm.r2 =  2.0e-3;
-    prm.r3 =  4.0e-3;
-    prm.r4 =  9.0e-3;
-    prm.r5 =  2.0e-3;
-    prm.r6 = 14.0e-3;
+    pm.r1 =  0.8e-3;
+    pm.r2 =  2.0e-3;
+    pm.r3 =  4.0e-3;
+    pm.r4 =  9.0e-3;
+    pm.r5 =  2.0e-3;
+    pm.r6 = 14.0e-3;
 
     //中性粒子の流入条件
-    double Q_neutIn = prm.Q_neutIn_mgs*1e-6/prm.massi; //mg/s -> kg/s -> 個/s
-    double S_in = 2.0*M_PI*prm.r4*prm.width_neutIn;
-    prm.fn_In = Q_neutIn/S_in;
+    double Q_neutIn = pm.Q_neutIn_mgs*1e-6/pm.massi; //mg/s -> kg/s -> 個/s
+    double S_in = 2.0*M_PI*pm.r4*pm.width_neutIn;
+    pm.fn_In = Q_neutIn/S_in;
     
-    gc.i_flc_bl[0][0] = int(prm.x6/prm.dx + 0.5) + 1; //1
-    gc.j_flc_bl[0][0] = int(prm.r3/prm.dr + 0.5) + 1; //21
-    gc.i_flc_bl[0][1] = int(prm.x2/prm.dx - 0.5) + 1; //20
-    gc.j_flc_bl[0][1] = int(prm.r4/prm.dr - 0.5) + 1; //45
+    gc.i_flc_bl[0][0] = int(pm.x6/pm.dx + 0.5) + 1; //1
+    gc.j_flc_bl[0][0] = int(pm.r3/pm.dr + 0.5) + 1; //21
+    gc.i_flc_bl[0][1] = int(pm.x2/pm.dx - 0.5) + 1; //20
+    gc.j_flc_bl[0][1] = int(pm.r4/pm.dr - 0.5) + 1; //45
 
-    gc.i_flc_bl[1][0] = int(prm.x2/prm.dx + 0.5) + 1; //21
-    gc.j_flc_bl[1][0] = int(prm.r5/prm.dr + 0.5) + 1; //11
-    gc.i_flc_bl[1][1] = int(prm.x4/prm.dx - 0.5) + 1; //75
-    gc.j_flc_bl[1][1] = int(prm.r4/prm.dr - 0.5) + 1; //45
+    gc.i_flc_bl[1][0] = int(pm.x2/pm.dx + 0.5) + 1; //21
+    gc.j_flc_bl[1][0] = int(pm.r5/pm.dr + 0.5) + 1; //11
+    gc.i_flc_bl[1][1] = int(pm.x4/pm.dx - 0.5) + 1; //75
+    gc.j_flc_bl[1][1] = int(pm.r4/pm.dr - 0.5) + 1; //45
 
-    gc.i_flc_bl[2][0] = int(prm.x2/prm.dx + 0.5) + 1; //21
-    gc.j_flc_bl[2][0] = int(prm.r1/prm.dr + 0.5) + 1; //5
-    gc.i_flc_bl[2][1] = int(prm.x3/prm.dx - 0.5) + 1; //50
-    gc.j_flc_bl[2][1] = int(prm.r5/prm.dr - 0.5) + 1; //10
+    gc.i_flc_bl[2][0] = int(pm.x2/pm.dx + 0.5) + 1; //21
+    gc.j_flc_bl[2][0] = int(pm.r1/pm.dr + 0.5) + 1; //5
+    gc.i_flc_bl[2][1] = int(pm.x3/pm.dx - 0.5) + 1; //50
+    gc.j_flc_bl[2][1] = int(pm.r5/pm.dr - 0.5) + 1; //10
 
-    gc.i_flc_bl[3][0] = int(prm.x3/prm.dx + 0.5) + 1; //51
-    gc.j_flc_bl[3][0] = int(0.0/prm.dr + 0.5) + 1; //1
-    gc.i_flc_bl[3][1] = int(prm.x5/prm.dx - 0.5) + 1; //100
-    gc.j_flc_bl[3][1] = int(prm.r5/prm.dr - 0.5) + 1; //10
+    gc.i_flc_bl[3][0] = int(pm.x3/pm.dx + 0.5) + 1; //51
+    gc.j_flc_bl[3][0] = int(0.0/pm.dr + 0.5) + 1; //1
+    gc.i_flc_bl[3][1] = int(pm.x5/pm.dx - 0.5) + 1; //100
+    gc.j_flc_bl[3][1] = int(pm.r5/pm.dr - 0.5) + 1; //10
 
-    gc.i_flc_bl[4][0] = int(prm.x5/prm.dx + 0.5) + 1; //101
-    gc.j_flc_bl[4][0] = int(0.0/prm.dr + 0.5) + 1; //1
-    gc.i_flc_bl[4][1] = int(prm.xR/prm.dx - 0.5) + 1; //158
-    gc.j_flc_bl[4][1] = int(prm.rmax/prm.dr - 0.5) + 1; //70
+    gc.i_flc_bl[4][0] = int(pm.x5/pm.dx + 0.5) + 1; //101
+    gc.j_flc_bl[4][0] = int(0.0/pm.dr + 0.5) + 1; //1
+    gc.i_flc_bl[4][1] = int(pm.xR/pm.dx - 0.5) + 1; //158
+    gc.j_flc_bl[4][1] = int(pm.rmax/pm.dr - 0.5) + 1; //70
 
-    gc.i_flc_bl[5][0] = int(prm.x1/prm.dx + 0.5) + 1; //1
-    gc.j_flc_bl[5][0] = int(prm.r1/prm.dr + 0.5) + 1; //5
-    gc.i_flc_bl[5][1] = int(prm.x2/prm.dx - 0.5) + 1; //20
-    gc.j_flc_bl[5][1] = int(prm.r2/prm.dr - 0.5) + 1; //10
+    gc.i_flc_bl[5][0] = int(pm.x1/pm.dx + 0.5) + 1; //1
+    gc.j_flc_bl[5][0] = int(pm.r1/pm.dr + 0.5) + 1; //5
+    gc.i_flc_bl[5][1] = int(pm.x2/pm.dx - 0.5) + 1; //20
+    gc.j_flc_bl[5][1] = int(pm.r2/pm.dr - 0.5) + 1; //10
 
     //std::cout << "flc" << std::endl;
     //std::cout << i_flc_bl[0][0] << " , "<<j_flc_bl[0][0] << " , "<< i_flc_bl[0][1] << " , "<<j_flc_bl[0][1] << std::endl;
@@ -152,35 +152,35 @@ void makeBoundary(Params &prm, GridCenter &gc, GridInterface &gi)
     //std::cout << i_flc_bl[4][0] << " , "<<j_flc_bl[4][0] << " , "<< i_flc_bl[4][1] << " , "<<j_flc_bl[4][1] << std::endl;
     //std::cout << i_flc_bl[5][0] << " , "<<j_flc_bl[5][0] << " , "<< i_flc_bl[5][1] << " , "<<j_flc_bl[5][1] << std::endl;
 
-    gi.i_flx_bl[0][0] = int(x6/dx + 0.5) + 2; //2
-    gi.j_flx_bl[0][0] = int(r3/dr + 0.5) + 1; //21
-    gi.i_flx_bl[0][1] = int(x2/dx - 0.5) + 2; //21
-    gi.j_flx_bl[0][1] = int(r4/dr - 0.5) + 1; //47
+    gx.i_flx_bl[0][0] = int(pm.x6/pm.dx + 0.5) + 2; //2
+    gx.j_flx_bl[0][0] = int(pm.r3/pm.dr + 0.5) + 1; //21
+    gx.i_flx_bl[0][1] = int(pm.x2/pm.dx - 0.5) + 2; //21
+    gx.j_flx_bl[0][1] = int(pm.r4/pm.dr - 0.5) + 1; //47
 
-    i_flx_bl[1][0] = int(x2/dx + 0.5) + 2; //22
-    j_flx_bl[1][0] = int(r5/dr + 0.5) + 1; //11
-    i_flx_bl[1][1] = int(x4/dx - 0.5) + 1; //78
-    j_flx_bl[1][1] = int(r4/dr - 0.5) + 1; //47
+    gx.i_flx_bl[1][0] = int(pm.x2/pm.dx + 0.5) + 2; //22
+    gx.j_flx_bl[1][0] = int(pm.r5/pm.dr + 0.5) + 1; //11
+    gx.i_flx_bl[1][1] = int(pm.x4/pm.dx - 0.5) + 1; //78
+    gx.j_flx_bl[1][1] = int(pm.r4/pm.dr - 0.5) + 1; //47
 
-    i_flx_bl[2][0] = int(x2/dx + 0.5) + 2; //22
-    j_flx_bl[2][0] = int(r1/dr + 0.5) + 1; //5
-    i_flx_bl[2][1] = int(x3/dx - 0.5) + 2; //51
-    j_flx_bl[2][1] = int(r5/dr - 0.5) + 1; //10
+    gx.i_flx_bl[2][0] = int(pm.x2/pm.dx + 0.5) + 2; //22
+    gx.j_flx_bl[2][0] = int(pm.r1/pm.dr + 0.5) + 1; //5
+    gx.i_flx_bl[2][1] = int(pm.x3/pm.dx - 0.5) + 2; //51
+    gx.j_flx_bl[2][1] = int(pm.r5/pm.dr - 0.5) + 1; //10
 
-    i_flx_bl[3][0] = int(x3/dx + 0.5) + 2; //52
-    j_flx_bl[3][0] = int(0.0/dr + 0.5) + 1; //1
-    i_flx_bl[3][1] = int(x5/dx - 0.5) + 2; //104
-    j_flx_bl[3][1] = int(r5/dr - 0.5) + 1; //10
+    gx.i_flx_bl[3][0] = int(pm.x3/pm.dx + 0.5) + 2; //52
+    gx.j_flx_bl[3][0] = int(   0.0/pm.dr + 0.5) + 1; //1
+    gx.i_flx_bl[3][1] = int(pm.x5/pm.dx - 0.5) + 2; //104
+    gx.j_flx_bl[3][1] = int(pm.r5/pm.dr - 0.5) + 1; //10
 
-    i_flx_bl[4][0] = int(x5/dx + 0.5) + 2; //105
-    j_flx_bl[4][0] = int(0.0/dr + 0.5) + 1; //1
-    i_flx_bl[4][1] = int(xR/dx - 0.5) + 1; //158
-    j_flx_bl[4][1] = int(rmax/dr - 0.5) + 1; //70
+    gx.i_flx_bl[4][0] = int(pm.x5/pm.dx + 0.5) + 2; //105
+    gx.j_flx_bl[4][0] = int(   0.0/pm.dr + 0.5) + 1; //1
+    gx.i_flx_bl[4][1] = int(pm.xR/pm.dx - 0.5) + 1; //158
+    gx.j_flx_bl[4][1] = int(pm.rmax/pm.dr - 0.5) + 1; //70
 
-    i_flx_bl[5][0] = int(x1/dx + 0.5) + 2; //2
-    j_flx_bl[5][0] = int(r1/dr + 0.5) + 1; //5
-    i_flx_bl[5][1] = int(x2/dx - 0.5) + 2; //21
-    j_flx_bl[5][1] = int(r2/dr - 0.5) + 1; //10
+    gx.i_flx_bl[5][0] = int(pm.x1/pm.dx + 0.5) + 2; //2
+    gx.j_flx_bl[5][0] = int(pm.r1/pm.dr + 0.5) + 1; //5
+    gx.i_flx_bl[5][1] = int(pm.x2/pm.dx - 0.5) + 2; //21
+    gx.j_flx_bl[5][1] = int(pm.r2/pm.dr - 0.5) + 1; //10
 
     //std::cout << "flx" << std::endl;
     //std::cout << i_flx_bl[0][0] << " , "<<j_flx_bl[0][0] << " , "<< i_flx_bl[0][1] << " , "<<j_flx_bl[0][1] << std::endl;
@@ -190,35 +190,35 @@ void makeBoundary(Params &prm, GridCenter &gc, GridInterface &gi)
     //std::cout << i_flx_bl[4][0] << " , "<<j_flx_bl[4][0] << " , "<< i_flx_bl[4][1] << " , "<<j_flx_bl[4][1] << std::endl;
     //std::cout << i_flx_bl[5][0] << " , "<<j_flx_bl[5][0] << " , "<< i_flx_bl[5][1] << " , "<<j_flx_bl[5][1] << std::endl;
 
-    i_flr_bl[0][0] = int(x6/dx + 0.5) + 1; //1
-    j_flr_bl[0][0] = int(r3/dr + 0.5) + 2; //22
-    i_flr_bl[0][1] = int(x2/dx - 0.5) + 1; //20
-    j_flr_bl[0][1] = int(r4/dr - 0.5) + 1; //47
+    gr.i_flr_bl[0][0] = int(pm.x6/pm.dx + 0.5) + 1; //1
+    gr.j_flr_bl[0][0] = int(pm.r3/pm.dr + 0.5) + 2; //22
+    gr.i_flr_bl[0][1] = int(pm.x2/pm.dx - 0.5) + 1; //20
+    gr.j_flr_bl[0][1] = int(pm.r4/pm.dr - 0.5) + 1; //47
 
-    i_flr_bl[1][0] = int(x2/dx + 0.5) + 1; //21
-    j_flr_bl[1][0] = int(r5/dr + 0.5) + 1; //11
-    i_flr_bl[1][1] = int(x4/dx - 0.5) + 1; //78
-    j_flr_bl[1][1] = int(r4/dr - 0.5) + 1; //47
+    gr.i_flr_bl[1][0] = int(pm.x2/pm.dx + 0.5) + 1; //21
+    gr.j_flr_bl[1][0] = int(pm.r5/pm.dr + 0.5) + 1; //11
+    gr.i_flr_bl[1][1] = int(pm.x4/pm.dx - 0.5) + 1; //78
+    gr.j_flr_bl[1][1] = int(pm.r4/pm.dr - 0.5) + 1; //47
 
-    i_flr_bl[2][0] = int(x2/dx + 0.5) + 1; //21
-    j_flr_bl[2][0] = int(r1/dr + 0.5) + 2; //6
-    i_flr_bl[2][1] = int(x3/dx - 0.5) + 1; //50
-    j_flr_bl[2][1] = int(r5/dr - 0.5) + 1; //10
+    gr.i_flr_bl[2][0] = int(pm.x2/pm.dx + 0.5) + 1; //21
+    gr.j_flr_bl[2][0] = int(pm.r1/pm.dr + 0.5) + 2; //6
+    gr.i_flr_bl[2][1] = int(pm.x3/pm.dx - 0.5) + 1; //50
+    gr.j_flr_bl[2][1] = int(pm.r5/pm.dr - 0.5) + 1; //10
 
-    i_flr_bl[3][0] = int(x3/dx + 0.5) + 1; //51
-    j_flr_bl[3][0] = int(0.0/dr + 0.5) + 2; //2
-    i_flr_bl[3][1] = int(x5/dx - 0.5) + 1; //103
-    j_flr_bl[3][1] = int(r5/dr - 0.5) + 1; //10
+    gr.i_flr_bl[3][0] = int(pm.x3/pm.dx + 0.5) + 1; //51
+    gr.j_flr_bl[3][0] = int(   0.0/pm.dr + 0.5) + 2; //2
+    gr.i_flr_bl[3][1] = int(pm.x5/pm.dx - 0.5) + 1; //103
+    gr.j_flr_bl[3][1] = int(pm.r5/pm.dr - 0.5) + 1; //10
 
-    i_flr_bl[4][0] = int(x5/dx + 0.5) + 1; //104
-    j_flr_bl[4][0] = int(0.0/dr + 0.5) + 2; //2
-    i_flr_bl[4][1] = int(xR/dx - 0.5) + 1; //158
-    j_flr_bl[4][1] = int(rmax/dr - 0.5) + 1; //70
+    gr.i_flr_bl[4][0] = int(pm.x5/pm.dx + 0.5) + 1; //104
+    gr.j_flr_bl[4][0] = int(   0.0/pm.dr + 0.5) + 2; //2
+    gr.i_flr_bl[4][1] = int(pm.xR/pm.dx - 0.5) + 1; //158
+    gr.j_flr_bl[4][1] = int(pm.rmax/pm.dr - 0.5) + 1; //70
 
-    i_flr_bl[5][0] = int(x1/dx + 0.5) + 1; //1
-    j_flr_bl[5][0] = int(r1/dr + 0.5) + 2; //6
-    i_flr_bl[5][1] = int(x2/dx - 0.5) + 1; //20
-    j_flr_bl[5][1] = int(r2/dr - 0.5) + 1; //10
+    gr.i_flr_bl[5][0] = int(pm.x1/pm.dx + 0.5) + 1; //1
+    gr.j_flr_bl[5][0] = int(pm.r1/pm.dr + 0.5) + 2; //6
+    gr.i_flr_bl[5][1] = int(pm.x2/pm.dx - 0.5) + 1; //20
+    gr.j_flr_bl[5][1] = int(pm.r2/pm.dr - 0.5) + 1; //10
 
     //std::cout << "flr" << std::endl;
     //std::cout << i_flr_bl[0][0] << " , "<<j_flr_bl[0][0] << " , "<< i_flr_bl[0][1] << " , "<<j_flr_bl[0][1] << std::endl;
@@ -229,49 +229,49 @@ void makeBoundary(Params &prm, GridCenter &gc, GridInterface &gi)
     //std::cout << i_flr_bl[5][0] << " , "<<j_flr_bl[5][0] << " , "<< i_flr_bl[5][1] << " , "<<j_flr_bl[5][1] << std::endl;
 
     for (int iblock=0;iblock<5;iblock++){ 
-        for (int i=i_flc_bl[iblock][0];i<=i_flc_bl[iblock][1];i++){ 
-            for (int j=j_flc_bl[iblock][0];j<=j_flc_bl[iblock][1];j++){
-                jdgBnd_flc[i][j] = 1;
+        for (int i=gc.i_flc_bl[iblock][0];i<=gc.i_flc_bl[iblock][1];i++){ 
+            for (int j=gc.j_flc_bl[iblock][0];j<=gc.j_flc_bl[iblock][1];j++){
+                gc.jdgBnd_flc[i][j] = 1;
             }
         }
     }
 
     for (int iblock=0;iblock<5;iblock++){ 
-        for (int i=i_flx_bl[iblock][0];i<=i_flx_bl[iblock][1];i++){ 
-            for (int j=j_flx_bl[iblock][0];j<=j_flx_bl[iblock][1];j++){
-                jdgBnd_flx[i][j] = 1;
+        for (int i=gx.i_flx_bl[iblock][0];i<=gx.i_flx_bl[iblock][1];i++){ 
+            for (int j=gx.j_flx_bl[iblock][0];j<=gx.j_flx_bl[iblock][1];j++){
+                gx.jdgBnd_flx[i][j] = 1;
             }
         }
     }
 
     for (int iblock=0;iblock<5;iblock++){ 
-        for (int i=i_flr_bl[iblock][0];i<=i_flr_bl[iblock][1];i++){ 
-            for (int j=j_flr_bl[iblock][0];j<=j_flr_bl[iblock][1];j++){
-                jdgBnd_flr[i][j] = 1;
+        for (int i=gr.i_flr_bl[iblock][0];i<=gr.i_flr_bl[iblock][1];i++){ 
+            for (int j=gr.j_flr_bl[iblock][0];j<=gr.j_flr_bl[iblock][1];j++){
+                gr.jdgBnd_flr[i][j] = 1;
             }
         }
     }
 
     for (int iblock=0;iblock<6;iblock++){ 
-        for (int i=i_flc_bl[iblock][0];i<=i_flc_bl[iblock][1];i++){ 
-            for (int j=j_flc_bl[iblock][0];j<=j_flc_bl[iblock][1];j++){
-                jdgBnd_Ep[i][j] = 1;
+        for (int i=gc.i_flc_bl[iblock][0];i<=gc.i_flc_bl[iblock][1];i++){ 
+            for (int j=gc.j_flc_bl[iblock][0];j<=gc.j_flc_bl[iblock][1];j++){
+                gc.jdgBnd_Ep[i][j] = 1;
             }
         }
     }
 
     for (int iblock=0;iblock<6;iblock++){ 
-        for (int i=i_flx_bl[iblock][0];i<=i_flx_bl[iblock][1];i++){ 
-            for (int j=j_flx_bl[iblock][0];j<=j_flx_bl[iblock][1];j++){
-                jdgBnd_Ex[i][j] = 1;
+        for (int i=gx.i_flx_bl[iblock][0];i<=gx.i_flx_bl[iblock][1];i++){ 
+            for (int j=gx.j_flx_bl[iblock][0];j<=gx.j_flx_bl[iblock][1];j++){
+                gx.jdgBnd_Ex[i][j] = 1;
             }
         }
     }
 
     for (int iblock=0;iblock<6;iblock++){ 
-        for (int i=i_flr_bl[iblock][0];i<=i_flr_bl[iblock][1];i++){ 
-            for (int j=j_flr_bl[iblock][0];j<=j_flr_bl[iblock][1];j++){
-                jdgBnd_Er[i][j] = 1;
+        for (int i=gr.i_flr_bl[iblock][0];i<=gr.i_flr_bl[iblock][1];i++){ 
+            for (int j=gr.j_flr_bl[iblock][0];j<=gr.j_flr_bl[iblock][1];j++){
+                gr.jdgBnd_Er[i][j] = 1;
             }
         }
     }

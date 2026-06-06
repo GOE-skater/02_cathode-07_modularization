@@ -165,7 +165,7 @@ void OutputModule::output(Params &pm, GridCenter &gc, GridInterfaceX &gx, GridIn
     //std::ofstream outputfile1_1(char1+"_tmp"+char2+char_csv);
     //outputfile1<<"x,rho,Ui,rhoUix,Ue,rhoUex,rhoUex_E,rhoUex_D,E,phi,psi,rho_th,U_th,E_th,phi_th,psi_th,rate_ionize,divi,dive1,dive2,dive3, div_poisson, LHS, RHS,zero" << std::endl;
     //outputfile1<<"x,rhon,rho,rhoe(test),Uix,rhoUix,Uex,Uey,rhoUex,rhoUey,Te,heat_flux,Bz,E,phi,nu_m,nu_en,nu_ei,nu_ionz,nu_exc,nu_wall,nu_ano,mue_parae,mue_perp,Halle,jd,Id,rate_eloss,rate_ionize,divi,dive,divn,engy_LHS,engy_LHS1,engy_LHS2,engy_LHS3,engy_LHS4,engy_RHS,engy_RHS1,engy_RHS2,engy_RHS3,zero" << std::endl;
-    outputfile1<<"i,j,x,r,rhoi,rhoe,Uix,Uir,Uip,Ui_mag,rhoUix,rhoUir,rhoUip,Te,Te_eff,rhoeps,Gx,Gr,phi,Ex,Er,rhoUex,rhoUer,rhoUep,Uex,Uer,Uep,Ue_mag,rate_ionize,nu_m,nu_m1,nu_ionz,nu_ionzStep,nu_excStep,nu_exc,nu_excMeta,nui_m,mu_para,mu_perp,mu_x,mu_r,mu_c,Ap,Bx,Br,Bmag,Omega,Omegax,Omegar,Pabs,rate_eloss,Loss,P_ES,Pnet,nabla_rhoUe,nabla_rhoUa,nabla_rhoUi,nabla_rhoUm,rate_rhom,rateG_rhom,rateL_rhom,nabla_G,nabla_Ga,rhom,rhoUmx,rhoUmr,Umx,Umr,Debye,phi_analytical,|Ex_mw|,|Er_mw|,|Ep_mw|,rate_ionize_direct,rate_ionize_stepwise,rhon,d|B|/pm.dx,d|B|/pm.dr,rate_eloss_n,rate_eloss_m,distECR,pm.nu_eff,Jx_exc,Jr_exc,Jp_exc,scx,scr,rhoq_sc,nUex,nUer,nabla_nUe,rhoUnx,rhoUnr,nabla_rhoUn,rate_rhon,nu_super,deltaB,nu_ano,nu_ano_IAT,jdgBnd_flc,Mache,zero" << std::endl;
+    outputfile1<<"i,j,x,r,rhoi,rhoe,Uix,Uir,Uip,Ui_mag,rhoUix,rhoUir,rhoUip,Te,Te_eff,rhoeps,Gx,Gr,phi,Ex,Er,rhoUex,rhoUer,rhoUep,Uex,Uer,Uep,Ue_mag,rate_ionize,nu_m,nu_m1,nu_ionz,nu_ionzStep,nu_excStep,nu_exc,nu_excMeta,nui_m,mu_para,mu_perp,mu_x,mu_r,mu_c,Ap,Bx,Br,Bmag,Omega,Omegax,Omegar,Pabs,rate_eloss,Loss,P_ES,Pnet,nabla_rhoUe,nabla_rhoUa,nabla_rhoUi,nabla_rhoUm,rate_rhom,rateG_rhom,rateL_rhom,nabla_G,nabla_Ga,rhom,rhoUmx,rhoUmr,Umx,Umr,Debye,phi_analytical,|Ex_mw|,|Er_mw|,|Ep_mw|,rate_ionize_direct,rate_ionize_stepwise,rhon,d|B|/dx,d|B|/dr,rate_eloss_n,rate_eloss_m,distECR,nu_eff,Jx_exc,Jr_exc,Jp_exc,scx,scr,rhoq_sc,nUex,nUer,nabla_nUe,rhoUnx,rhoUnr,nabla_rhoUn,rate_rhon,nu_super,deltaB,nu_ano,nu_ano_IAT,jdgBnd_flc,Mache,zero" << std::endl;
     //outputfile1_1 << "i,j,x,r,rhom,rhoUmx,rhoUmr,nabla_rhoUm,rhon,rhoUnx,rhoUnr,nabla_rhoUn,zero" << std::endl;
     
     for(int i=1;i<=pm.ni;i++){
@@ -379,7 +379,7 @@ void OutputModule::output(Params &pm, GridCenter &gc, GridInterfaceX &gx, GridIn
 
     std::ofstream outputfile2(char1+char2+char_csv);
 
-    outputfile2<<"i,j,x,r,rhoi,rhoi_old,Uix,Uix_old,Uir,Uir_old,Uip,Uip_old,rhoe,rhoe_old,rhoUex,rhoUex_old,rhoUer,rhoUer_old,Te,Te_old,Gx,Gx_old,Gr,Gr_old,phi,phi_old,rhom,rhom_old,rhoUmx,rhoUmr,rate_ionize,scx,scr,nUex,nUex_old,nUer,nUer_old,rhon,rhon_old,rhoUnx,rhoUnr,rhoeps,rhoeps_old,zero"<< std::endl;
+    outputfile2<<"i,j,x,r,rhoi,rhoi_old,Uix,Uix_old,Uir,Uir_old,Uip,Uip_old,rhoe,rhoe_old,rhoUex,rhoUex_old,rhoUer,rhoUer_old,Te,Te_old,Gx,Gx_old,Gr,Gr_old,phi,phi_old,rhom,rhom_old,rhoUmx,rhoUmr,rate_ionize,scx,scr,nUex,nUex_old,nUer,nUer_old,rhon,rhon_old,rhoUnx,rhoUnr,rhoeps,rhoeps_old,rhoUix_wall,rhoUir_wall,rhoUex_wall,rhoUer_wall,rhoUmx_wall,rhoUmr_wall,rhoUnx_wall,rhoUnr_wall,Gx_wall,Gr_wall,zero"<< std::endl;
     outputfile2 << std::setprecision(std::numeric_limits<double>::max_digits10) << std::scientific;
     
     for(int i=0;i<pm.ni+2;i++){
@@ -404,8 +404,13 @@ void OutputModule::output(Params &pm, GridCenter &gc, GridInterfaceX &gx, GridIn
                 << "," << truncate(gx.nUex[i][j]) << "," << truncate(gx.nUex_old[i][j]) 
                 << "," << truncate(gr.nUer[i][j]) << "," << truncate(gr.nUer_old[i][j]) 
                 << "," << truncate(gc.rhon[i][j]) << "," << truncate(gc.rhon_old[i][j]) 
-                << "," << truncate(gx.rhoUnx[i][j]) << "," << truncate(gr.rhoUnr[i][j]) 
-                << "," << truncate(gc.rhoeps[i][j]) << "," << truncate(gc.rhoeps_old[i][j]) 
+                << "," << truncate(gx.rhoUnx[i][j])      << "," << truncate(gr.rhoUnr[i][j]) 
+                << "," << truncate(gc.rhoeps[i][j])      << "," << truncate(gc.rhoeps_old[i][j]) 
+                << "," << truncate(gx.rhoUix_wall[i][j]) << "," << truncate(gr.rhoUir_wall[i][j]) 
+                << "," << truncate(gx.rhoUex_wall[i][j]) << "," << truncate(gr.rhoUer_wall[i][j]) 
+                << "," << truncate(gx.rhoUmx_wall[i][j]) << "," << truncate(gr.rhoUmr_wall[i][j]) 
+                << "," << truncate(gx.rhoUnx_wall[i][j]) << "," << truncate(gr.rhoUnr_wall[i][j]) 
+                << "," << truncate(gx.Gx_wall[i][j])     << "," << truncate(gr.Gr_wall[i][j]) 
                 << "," << 0.0<< std::endl;
         }
     }

@@ -109,7 +109,7 @@ relaxation:
 # ============================================================
 
 simulation:
-  ntime: 1           # (int) Number of time steps, previous/example: 3000000
+  ntime: 200           # (int) Number of time steps, previous/example: 3000000
   icon_autoFinish: 1      # (int) Whether to automatically finish the simulation
 
 # ============================================================

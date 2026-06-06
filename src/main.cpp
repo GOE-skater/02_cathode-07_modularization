@@ -201,23 +201,20 @@ int main(int argc, char *argv[])
         }
         //------------------------------------
 
-        /*
+
         if(pm.icon_PC == 1){
             
-            solve_phi_couple_wdTe_wSEE_PC();
+            fluM.solve_phi_couple_wdTe_wSEE_PC(pm, gc, gx, gr, se);
 
-            if(icon_inertia == 0){
-                //solve_rhoe_PC(); //PC method
-                solve_rhoe_wdTe_wSEE_PC();
+            if(pm.icon_inertia == 0){
 
-                //solve_Te_PC(); //PC method
-                solve_Te_wdTe_wSEE_PC(); //PC method
-            }else if(icon_inertia == 1){
-                //solve_rhoe_PC(); //PC method
-                solve_rhoe_wdTe_wSEE_wInertia_PC();
+                fluM.solve_rhoe_wdTe_wSEE_PC(pm, gc, gx, gr, se);
 
-                //solve_Te_PC(); //PC method
-                solve_Te_wdTe_wSEE_wInertia_PC(); //PC method
+                fluM.solve_Te_wdTe_wSEE_PC(pm, gc, gx, gr, se);
+            
+            }else if(pm.icon_inertia == 1){
+                //solve_rhoe_wdTe_wSEE_wInertia_PC();
+                //solve_Te_wdTe_wSEE_wInertia_PC();
             }
             
         }else{
@@ -227,16 +224,16 @@ int main(int argc, char *argv[])
         }
 
         if(pm.itime % pm.ndt_n == 0){
-            update_rhon(); //Diffusion方程式
+            fluM.update_rhon(pm, gc, gx, gr); //Diffusion方程式
             //update_rhon_log(); //Diffusion方程式
         }
 
         if(pm.itime % pm.ndt_m == 0){
             //metastable更新
-            update_rhom(); //論文と同じ実装
+            fluM.update_rhom(pm, gc, gx, gr); //論文と同じ実装
             //update_rhom_kinetic(); //境界条件kinetic修正版
         }
-        */
+
         
         //輸送係数更新
         fluM.update_transport_coef(pm, gc, gx, gr, bo); //論文と同じ実装
